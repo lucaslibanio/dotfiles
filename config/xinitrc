@@ -10,9 +10,13 @@ export PATH="$HOME/Scripts:$HOME/.local/bin:$PATH"
 # dbus e systemd do usuário enxergam o X (notificações, portal, etc.)
 systemctl --user import-environment DISPLAY XAUTHORITY DBUS_SESSION_BUS_ADDRESS PATH
 
-# cores: ~/.Xresources e, se existir, as cores do pywal para dwm/dmenu (walupdate.sh)
+# cores: tema padrão (~/.Xresources) e, se o pywal estiver ligado (comando "tema"),
+# as cores dele por cima
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
-[ -f ~/.cache/wal/colors-suckless.Xresources ] && xrdb -merge ~/.cache/wal/colors-suckless.Xresources
+if [ -f ~/.cache/tema-pywal ] && [ -f ~/.cache/wal/colors-suckless.Xresources ]; then
+    xrdb -merge ~/.cache/wal/colors.Xresources
+    xrdb -merge ~/.cache/wal/colors-suckless.Xresources
+fi
 
 GTK_THEME=Adwaita:dark nm-applet &
 GTK_THEME=Adwaita:dark cbatticon -i symbolic &

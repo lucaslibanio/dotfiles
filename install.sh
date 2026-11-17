@@ -90,6 +90,7 @@ fi
 passo "Criando links das configs e scripts"
 link "$DOT/scripts"               "$HOME/Scripts"
 link "$DOT/config/dunst/dunstrc"  "$HOME/.config/dunst/dunstrc"
+link "$DOT/config/Xresources"     "$HOME/.Xresources"
 [ -f "$DOT/config/xinitrc" ]     && link "$DOT/config/xinitrc"     "$HOME/.xinitrc"
 [ -f "$DOT/config/xprofile" ]    && link "$DOT/config/xprofile"    "$HOME/.xprofile"
 mkdir -p "$HOME/Pictures/Screenshots"

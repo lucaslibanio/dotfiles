@@ -1,0 +1,79 @@
+#!/bin/bash
+# Liga/desliga as cores do pywal (geradas a partir do papel de parede).
+#
+#   tema               alterna: pywal <-> padrão
+#   tema on | off      liga / desliga
+#   tema imagem.jpg    gera cores novas a partir da imagem (troca o papel de parede) e liga
+#   tema status        mostra qual está ativo
+#
+# Atalho no dwm: Super+Shift+T. O estado vale também para o próximo login.
+set -eu
+
+cache="$HOME/.cache/wal"
+flag="$HOME/.cache/tema-pywal"          # existe = pywal ligado
+padrao="$HOME/.source/config/Xresources"
+extra="$cache/colors-suckless.Xresources"
+
+msg() { echo "$1"; notify-send -h string:x-canonical-private-synchronous:tema "Tema" "$1" 2>/dev/null || true; }
+
+recarregar() {
+    xdotool key super+F5 2>/dev/null || true   # dwm
+    pkill -USR1 -x st 2>/dev/null || true      # st (todos os terminais abertos)
+}
+
+# O pywal só gera *.colorN; dwm, dmenu e slock usam nomes próprios.
+gerar_extra() {
+    # define $background, $foreground, $color0..$color15
+    . "$cache/colors.sh"
+    cat > "$extra" <<XRES
+dwm.normbgcolor:     $background
+dwm.normfgcolor:     $foreground
+dwm.normbordercolor: $color8
+dwm.selbgcolor:      $color4
+dwm.selfgcolor:      $foreground
+dwm.selbordercolor:  $color3
+dmenu.background:    $background
+dmenu.foreground:    $foreground
+dmenu.selbackground: $color4
+dmenu.selforeground: $foreground
+slock.color0:        $background
+slock.color4:        $color4
+slock.color1:        $color1
+slock.color3:        $color3
+slock.foreground:    $foreground
+XRES
+}
+
+ligar() {
+    if [ ! -f "$cache/colors.sh" ]; then
+        msg "Nenhuma cor do pywal ainda. Use: tema imagem.jpg"
+        exit 1
+    fi
+    gerar_extra
+    xrdb -merge "$cache/colors.Xresources"
+    xrdb -merge "$extra"
+    touch "$flag"
+    recarregar
+    msg "Tema: pywal ($(basename "${wallpaper:-?}"))"
+}
+
+desligar() {
+    xrdb -merge "$padrao"
+    rm -f "$flag"
+    recarregar
+    msg "Tema: padrão"
+}
+
+case "${1:-toggle}" in
+    toggle)  if [ -f "$flag" ]; then desligar; else ligar; fi ;;
+    on)      ligar ;;
+    off)     desligar ;;
+    status)  [ -f "$flag" ] && echo "pywal" || echo "padrão" ;;
+    -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//' ;;
+    *)
+        [ -f "$1" ] || { echo "Imagem não encontrada: $1 (veja: tema --help)"; exit 1; }
+        command -v wal >/dev/null || { echo "pywal não instalado: sudo pacman -S python-pywal"; exit 1; }
+        wal -q -i "$1"
+        ligar
+        ;;
+esac

@@ -1,0 +1,45 @@
+! Tema padrão (sem pywal): cinza + dourado na barra, gruvbox no terminal.
+! Link: ~/.Xresources -> ~/.source/config/Xresources
+! O comando "tema" alterna entre este arquivo e as cores do pywal.
+
+! ---- terminal (st) e qualquer programa que leia *.colorN
+*.foreground:  #ebdbb2
+*.background:  #222222
+*.cursorColor: #ebdbb2
+*.color0:  #282828
+*.color1:  #cc241d
+*.color2:  #98971a
+*.color3:  #d79921
+*.color4:  #458588
+*.color5:  #b16286
+*.color6:  #689d6a
+*.color7:  #a89984
+*.color8:  #928374
+*.color9:  #fb4934
+*.color10: #b8bb26
+*.color11: #fabd2f
+*.color12: #83a598
+*.color13: #d3869b
+*.color14: #8ec07c
+*.color15: #ebdbb2
+
+! ---- dwm
+dwm.normbgcolor:     #222222
+dwm.normfgcolor:     #ffffff
+dwm.normbordercolor: #444444
+dwm.selbgcolor:      #505050
+dwm.selfgcolor:      #ffffff
+dwm.selbordercolor:  #d79921
+
+! ---- dmenu (quando aberto fora do dwm)
+dmenu.background:    #222222
+dmenu.foreground:    #ffffff
+dmenu.selbackground: #505050
+dmenu.selforeground: #ffffff
+
+! ---- slock
+slock.color0:     #222222
+slock.color4:     #505050
+slock.color1:     #cc241d
+slock.color3:     #d79921
+slock.foreground: #ebdbb2

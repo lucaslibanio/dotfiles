@@ -36,7 +36,8 @@ Nenhum arquivo é apagado: o que já existir no lugar de um link vira `<nome>.ba
 | `dwmblocks/` | barra de status + scripts dos blocos *(submódulo)* | `/usr/local/bin/dwmblocks` |
 | `scripts/` | scripts do dia a dia | link em `~/Scripts` |
 | `config/dunst/dunstrc` | notificações | link em `~/.config/dunst/dunstrc` |
-| `config/xinitrc` | inicialização do X *(se existir)* | link em `~/.xinitrc` |
+| `config/xinitrc` | inicialização do X | link em `~/.xinitrc` |
+| `config/Xresources` | tema padrão (sem pywal) | link em `~/.Xresources` |
 | `TUTORIAL.html` | atalhos e recursos de dmenu, st e slock | |
 | `my-dwm/MUDANCAS.html` | atalhos do dwm | |
 
@@ -49,7 +50,7 @@ Nenhum arquivo é apagado: o que já existir no lugar de um link vira `<nome>.ba
 | `dmenu_display` | `Super+Shift+D` | estendido, espelhado, só notebook, só externo |
 | `dmenu_mount` | `Super+Shift+M` | monta/desmonta pendrives sem sudo |
 | `layout_change.sh` | | alterna teclado ABNT2 ↔ US internacional |
-| `walupdate.sh` | | `walupdate.sh imagem.jpg`: cores do papel de parede no dwm, dmenu, st e slock |
+| `tema` | `Super+Shift+T` | liga/desliga as cores do pywal; `tema imagem.jpg` gera cores novas |
 | `cripto_pendrive.sh` | | abre/fecha pendrive LUKS (`open /dev/sdb1`) |
 | `conserv_mode.sh` | | modo de conservação da bateria (IdeaPad) |
 | `camera_cell` | | celular como webcam (scrcpy) |
