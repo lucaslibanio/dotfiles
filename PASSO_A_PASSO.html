@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dotfiles — passo a passo</title>
+<style>
+  :root{
+    --bg:#1b1b1b; --panel:#222222; --line:#333; --fg:#ebdbb2; --mut:#a89984;
+    --sel:#505050; --acc:#d79921; --ok:#98971a; --red:#cc241d;
+    --mono:"Ubuntu Mono","JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+  main{max-width:860px;margin:0 auto;padding:30px 20px 80px}
+  h1{font-family:var(--mono);font-size:30px;margin:0 0 4px}
+  h1 span{color:var(--acc)}
+  .lead{color:var(--mut);margin:0 0 18px}
+  .progress{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0 12px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  .progress .txt{font:14px var(--mono);color:var(--mut);display:flex;justify-content:space-between;margin-bottom:6px}
+  .progress .bar{height:6px;background:#2e2e2e;border-radius:3px;overflow:hidden}
+  .progress .fill{height:100%;width:0;background:var(--acc);transition:width .25s}
+  h2{font-family:var(--mono);font-size:19px;margin:40px 0 4px;color:var(--acc)}
+  .sub{color:var(--mut);margin:0 0 14px;font-size:15px}
+  .step{display:grid;grid-template-columns:34px 1fr;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:12px 0;transition:opacity .2s,border-color .2s}
+  .step.done{opacity:.55;border-color:#3d3a1c}
+  .step.done h3{text-decoration:line-through;text-decoration-color:var(--mut)}
+  .check{width:28px;height:28px;border-radius:50%;border:2px solid var(--acc);background:transparent;color:#111;font:700 15px var(--mono);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .check .n{color:var(--acc)}
+  .step.done .check{background:var(--acc)}
+  .step.done .check .n{display:none}
+  .step.done .check::after{content:"✓";color:#111}
+  .step h3{margin:2px 0 6px;font-size:17px}
+  .step p{margin:6px 0;color:#d5c4a1}
+  .step ul{margin:6px 0;padding-left:20px;color:#d5c4a1}
+  .step li{margin:3px 0}
+  .cmd{position:relative;margin:10px 0}
+  .cmd pre{font-family:var(--mono);background:#141414;border:1px solid var(--line);border-left:3px solid var(--acc);padding:11px 74px 11px 13px;overflow:auto;border-radius:4px;font-size:14.5px;line-height:1.5;margin:0;color:#fff}
+  .cmd button{position:absolute;top:7px;right:7px;font:12px var(--mono);background:#2e2e2e;color:var(--fg);border:1px solid #444;border-radius:4px;padding:3px 9px;cursor:pointer}
+  .cmd button:hover{border-color:var(--acc);color:var(--acc)}
+  .cmd button.ok{border-color:var(--ok);color:#b8bb26}
+  code{font-family:var(--mono);background:#2b2b2b;padding:1px 5px;border-radius:3px;font-size:.95em}
+  kbd{font-family:var(--mono);font-size:13.5px;background:#2e2e2e;border:1px solid #444;border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap;color:#fff}
+  .note{border-radius:6px;padding:10px 14px;margin:10px 0 2px;font-size:15px}
+  .note.warn{background:#2a1716;border:1px solid #5a2421}
+  .note.warn b{color:#fb4934}
+  .note.tip{background:#2a2316;border:1px solid #5a4516}
+  .note.tip b{color:var(--acc)}
+  .reset{margin-top:30px;font:13px var(--mono);background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:4px;padding:5px 10px;cursor:pointer}
+  footer{margin-top:40px;color:var(--mut);font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:15px;margin:8px 0}
+  td{padding:6px 8px;border-bottom:1px solid #2a2a2a;vertical-align:top}
+  td:first-child{white-space:nowrap}
+</style>
+</head>
+<body>
+<main>
+<h1>Dotfiles: <span>passo a passo</span></h1>
+<p class="lead">Do que fazer agora neste computador até instalar tudo num computador novo. Marque cada passo ao concluir; o progresso fica salvo neste navegador.</p>
+
+<div class="progress"><div class="txt"><span id="ptxt">0 de 0 passos</span><span id="ppct">0%</span></div><div class="bar"><div class="fill" id="pfill"></div></div></div>
+
+<!-- ============================ PARTE 1 ============================ -->
+<h2>1. Instalar neste computador</h2>
+<p class="sub">Compila e ativa tudo o que foi feito hoje.</p>
+
+<section class="step" data-id="install">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">1</span></button>
+  <div>
+    <h3>Rodar o instalador</h3>
+    <div class="cmd"><pre>cd ~/.source &amp;&amp; ./install.sh</pre><button>copiar</button></div>
+    <ul>
+      <li>Instala os pacotes que faltam com o pacman e pede a sua senha.</li>
+      <li>Compila e instala o dwm, o dmenu, o st, o slock e o dwmblocks.</li>
+      <li>Troca o <code>~/Scripts</code>, o <code>~/.xinitrc</code>, o <code>~/.Xresources</code>, o dunst e o zathura por links para o repositório. Os arquivos atuais viram <code>.bak-&lt;data&gt;</code>.</li>
+    </ul>
+    <div class="note warn"><b>Se algum <code>make</code> der erro,</b> o script para ali. Copie a saída e me mande: é a primeira compilação completa, então um erro é possível.</div>
+  </div>
+</section>
+
+<section class="step" data-id="slock">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">2</span></button>
+  <div>
+    <h3>Testar o slock com uma saída garantida</h3>
+    <p>Antes de confiar no bloqueio novo, abra um terminal em outro TTY com <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F2</kbd>, entre com seu usuário e volte ao X com <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F1</kbd>. Então rode:</p>
+    <div class="cmd"><pre>slock</pre><button>copiar</button></div>
+    <p>Digite a senha e <kbd>Enter</kbd> para desbloquear. Se travar, vá ao TTY 2 e rode:</p>
+    <div class="cmd"><pre>pkill slock</pre><button>copiar</button></div>
+  </div>
+</section>
+
+<section class="step" data-id="restart">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">3</span></button>
+  <div>
+    <h3>Sair e entrar de novo no X</h3>
+    <p>Carrega o <code>.xinitrc</code> novo (PATH dos scripts, xss-lock, cores). Use <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd> → <b>Sair do dwm</b> e depois:</p>
+    <div class="cmd"><pre>startx</pre><button>copiar</button></div>
+    <div class="note tip"><b>A tecla principal agora é Super</b> (a tecla Windows), não mais Alt. Aperte <kbd>Super</kbd>+<kbd>F1</kbd> para ver todos os atalhos.</div>
+  </div>
+</section>
+
+<section class="step" data-id="slockcfg">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">4</span></button>
+  <div>
+    <h3>Conferir o config.h antigo do slock</h3>
+    <p>Não consegui ler esse arquivo e por isso o renomeei. Se o comando abaixo não mostrar nada, os dois são iguais e você pode apagar o antigo.</p>
+    <div class="cmd"><pre>diff ~/.source/slock/config.h.antigo ~/.source/slock/config.def.h</pre><button>copiar</button></div>
+  </div>
+</section>
+
+<section class="step" data-id="pywal">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">5</span></button>
+  <div>
+    <h3>Opcional: testar as cores do pywal</h3>
+    <p>Gera uma paleta a partir de uma imagem e aplica no ambiente todo. Depois, <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> alterna entre o pywal e o tema padrão.</p>
+    <div class="cmd"><pre>tema ~/Wallpapers/alguma-imagem.jpg</pre><button>copiar</button></div>
+  </div>
+</section>
+
+<!-- ============================ PARTE 2 ============================ -->
+<h2>2. Publicar no GitHub</h2>
+<p class="sub">Para baixar tudo em outro computador. Usa o <code>gh</code>, que já está configurado na sua máquina.</p>
+
+<section class="step" data-id="repos">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">6</span></button>
+  <div>
+    <h3>Criar os repositórios do st, slock e dwmblocks</h3>
+    <p>Hoje eles só existem na sua máquina. O dwm e o dmenu já têm repositório (<code>my-dwm</code>, <code>my-dmenu</code>).</p>
+    <div class="cmd"><pre>cd ~/.source
+for r in st slock dwmblocks; do
+  gh repo create lucaslibanio/my-$r --public &amp;&amp; git -C $r push -u origin HEAD
+done</pre><button>copiar</button></div>
+    <p>Troque <code>--public</code> por <code>--private</code> se preferir.</p>
+  </div>
+</section>
+
+<section class="step" data-id="push">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">7</span></button>
+  <div>
+    <h3>Enviar o dwm e o dmenu</h3>
+    <div class="cmd"><pre>git -C ~/.source/my-dwm push &amp;&amp; git -C ~/.source/dmenu push</pre><button>copiar</button></div>
+  </div>
+</section>
+
+<section class="step" data-id="dotfiles">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">8</span></button>
+  <div>
+    <h3>Criar e enviar o repositório dotfiles</h3>
+    <div class="cmd"><pre>cd ~/.source &amp;&amp; gh repo create lucaslibanio/dotfiles --public --source=. --remote=origin --push</pre><button>copiar</button></div>
+  </div>
+</section>
+
+<!-- ============================ PARTE 3 ============================ -->
+<h2>3. Num computador novo</h2>
+<p class="sub">Com o Arch instalado, conectado à internet e com o <code>git</code>.</p>
+
+<section class="step" data-id="clone">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">9</span></button>
+  <div>
+    <h3>Baixar e instalar</h3>
+    <div class="cmd"><pre>git clone --recursive https://github.com/lucaslibanio/dotfiles.git ~/.source
+cd ~/.source &amp;&amp; ./install.sh</pre><button>copiar</button></div>
+    <ul>
+      <li>O clone precisa ir para <code>~/.source</code>, porque o dwmblocks procura os scripts lá.</li>
+      <li>Se os repositórios forem privados, rode <code>gh auth login</code> antes.</li>
+      <li>Para instalar também os opcionais (yt-dlp, scrcpy, wacom, tlp): <code>./install.sh --extras</code>.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="step" data-id="startx">
+  <button class="check" aria-label="Marcar passo como feito"><span class="n">10</span></button>
+  <div>
+    <h3>Entrar no X</h3>
+    <div class="cmd"><pre>startx</pre><button>copiar</button></div>
+    <p>Se o instalador avisou que o locale <code>pt_BR.UTF-8</code> não existe, descomente a linha dele em <code>/etc/locale.gen</code> e rode <code>sudo locale-gen</code>. Sem isso, a data aparece em inglês.</p>
+  </div>
+</section>
+
+<!-- ============================ REFERÊNCIA ============================ -->
+<h2>Dia a dia</h2>
+<table>
+  <tr><td>Ver atalhos</td><td><kbd>Super</kbd>+<kbd>F1</kbd>, ou <code>cheats st</code> no terminal</td></tr>
+  <tr><td>Mudar um programa</td><td>edite em <code>~/.source/&lt;programa&gt;</code>, rode <code>sudo make install</code>, depois <code>git commit</code> e <code>git push</code> lá dentro. Por fim, <code>git commit -am "..."</code> e <code>git push</code> em <code>~/.source</code></td></tr>
+  <tr><td>Mudou um atalho?</td><td><code>cheats --check</code> diz se a cola ficou desatualizada</td></tr>
+  <tr><td>Atualizar outro PC</td><td><code>cd ~/.source &amp;&amp; git pull &amp;&amp; git submodule update --init --recursive &amp;&amp; ./install.sh --sem-pacotes</code></td></tr>
+  <tr><td>Desfazer algo</td><td><code>git log</code> no repositório do programa e <code>git revert &lt;commit&gt;</code></td></tr>
+</table>
+
+<button class="reset" id="reset">desmarcar todos os passos</button>
+<footer>Também salvo em <code>~/.source/PASSO_A_PASSO.html</code>. Mais detalhes em <code>~/.source/README.md</code> e <code>~/.source/TUTORIAL.html</code>.</footer>
+</main>
+
+<script>
+const KEY = 'dotfiles-passos';
+const steps = [...document.querySelectorAll('.step')];
+let done = {};
+try { done = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { done = {}; }
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify(done)); } catch (e) {} }
+function render() {
+  let n = 0;
+  steps.forEach(s => { const d = !!done[s.dataset.id]; s.classList.toggle('done', d); if (d) n++; });
+  const pct = Math.round(100 * n / steps.length);
+  document.getElementById('ptxt').textContent = n + ' de ' + steps.length + ' passos';
+  document.getElementById('ppct').textContent = pct + '%';
+  document.getElementById('pfill').style.width = pct + '%';
+}
+steps.forEach(s => s.querySelector('.check').addEventListener('click', () => {
+  done[s.dataset.id] = !done[s.dataset.id]; save(); render();
+}));
+document.getElementById('reset').addEventListener('click', () => { done = {}; save(); render(); });
+
+document.querySelectorAll('.cmd button').forEach(b => b.addEventListener('click', async () => {
+  const txt = b.previousElementSibling.textContent;
+  try {
+    await navigator.clipboard.writeText(txt);
+    b.textContent = 'copiado'; b.classList.add('ok');
+  } catch (e) {
+    const r = document.createRange(); r.selectNodeContents(b.previousElementSibling);
+    const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    b.textContent = 'Ctrl+C';
+  }
+  setTimeout(() => { b.textContent = 'copiar'; b.classList.remove('ok'); }, 1500);
+}));
+render();
+</script>
+</body>
+</html>
