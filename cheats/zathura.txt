@@ -1,0 +1,45 @@
+# Moving
+j / k	scroll down / up
+h / l	scroll left / right
+Ctrl+D / Ctrl+U	half page down / up (stops at page edge)
+Space / Shift+Space	full page down / up
+J / K	next / previous page
+gg / G	first / last page
+42G	go to page 42
+H / L	top / bottom of the page
+Ctrl+O / Ctrl+I	jump back / forward (jump list)
+
+# Zoom and view
++ / -	zoom in / out
+=	original size
+a / s	fit page / fit width (opens fit to width)
+d	toggle dual page
+r	rotate
+i / Ctrl+R	dark mode on / off (keeps figure colors)
+F11	fullscreen
+F5	presentation mode
+Ctrl+N	toggle status bar
+
+# Search and links
+/ / ?	search forward / backward
+n / N	next / previous result
+f	follow a link (type its number)
+F	show where a link points
+Tab	table of contents (j/k move, l/h expand/collapse, Enter open)
+
+# Marks and bookmarks
+ma / 'a	set mark a / jump to mark a
+:bmark name / :blist	save bookmark / list bookmarks
+
+# Files
+o	open a file (Tab shows the 15 most recent)
+R	reload the document
+:write file.pdf	save a copy
+:print	print
+:info	document info
+q	quit
+
+# Copy and LaTeX
+select with the mouse	already copies (Ctrl+V anywhere, "+ in Neovim)
+Ctrl+click	SyncTeX: jump to the line in Neovim
+Space l v (in Neovim)	SyncTeX: jump from Neovim to the PDF
