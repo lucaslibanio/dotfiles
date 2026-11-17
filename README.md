@@ -49,7 +49,7 @@ Nenhum arquivo é apagado: o que já existir no lugar de um link vira `<nome>.ba
 | `dmenu_display` | `Super+Shift+D` | estendido, espelhado, só notebook, só externo |
 | `dmenu_mount` | `Super+Shift+M` | monta/desmonta pendrives sem sudo |
 | `layout_change.sh` | | alterna teclado ABNT2 ↔ US internacional |
-| `walupdate.sh` | | aplica as cores do pywal no dwm, st e dunst |
+| `walupdate.sh` | | `walupdate.sh imagem.jpg`: cores do papel de parede no dwm, dmenu, st e slock |
 | `cripto_pendrive.sh` | | abre/fecha pendrive LUKS (`open /dev/sdb1`) |
 | `conserv_mode.sh` | | modo de conservação da bateria (IdeaPad) |
 | `camera_cell` | | celular como webcam (scrcpy) |
