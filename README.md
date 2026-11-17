@@ -38,6 +38,7 @@ Nenhum arquivo é apagado: o que já existir no lugar de um link vira `<nome>.ba
 | `config/dunst/dunstrc` | notificações | link em `~/.config/dunst/dunstrc` |
 | `config/xinitrc` | inicialização do X | link em `~/.xinitrc` |
 | `config/Xresources` | tema padrão (sem pywal) | link em `~/.Xresources` |
+| `config/zathura/zathurarc` | leitor de PDF (modo escuro, SyncTeX com o Neovim) | link em `~/.config/zathura/zathurarc` |
 | `cheats/` | colas de atalhos (uma por programa, em inglês) | lidas pelo `cheats` |
 | `TUTORIAL.html` | atalhos e recursos de dmenu, st e slock | |
 | `my-dwm/MUDANCAS.html` | atalhos do dwm | |

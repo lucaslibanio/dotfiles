@@ -1,0 +1,60 @@
+# zathurarc: referência completa em `man zathurarc`
+# Backup da versão anterior: zathurarc.bak
+
+# ------------------------------------------------------------------ geral
+set selection-clipboard  clipboard   # texto selecionado com o mouse vai para o Ctrl+V (e para o "+ do Neovim)
+set adjust-open          width       # abre ajustado à largura (melhor para artigos/relatórios)
+set scroll-page-aware    true        # Ctrl+d/Ctrl+u/espaço param na borda da página
+set scroll-step          80          # j/k rolam mais por toque (padrão 40)
+set scroll-full-overlap  0.05        # ao rolar uma página inteira, mantém 5% visível para não se perder
+set continuous-hist-save true        # salva a posição a cada página (não só ao fechar)
+set window-title-basename true       # título da janela só com o nome do arquivo
+set window-title-page    true        # ... e a página atual
+set statusbar-home-tilde true        # mostra ~ no lugar de /home/lucas
+set show-recent          15          # arquivos recentes no :open
+set font                 "monospace normal 10"
+
+# ------------------------------------------------------------------ LaTeX / SyncTeX
+# O VimTeX abre o Zathura com `-x` sozinho; NÃO defina synctex-editor-command aqui.
+set synctex      true    # Ctrl+clique no PDF volta para a linha no Neovim
+set dbus-service true    # necessário para o forward search (Espaço l v no Neovim)
+
+# ------------------------------------------------------------------ modo escuro
+# Liga/desliga com Ctrl+r ou i. keephue preserva as cores de gráficos e figuras.
+set recolor            false
+set recolor-keephue    true
+set recolor-darkcolor  "#abb2bf"   # cor do texto no modo escuro
+set recolor-lightcolor "#1e2127"   # cor do fundo no modo escuro
+
+# ------------------------------------------------------------------ cores (One Dark)
+set default-bg              "#1e2127"
+set default-fg              "#abb2bf"
+set statusbar-bg            "#282c34"
+set statusbar-fg            "#abb2bf"
+set inputbar-bg             "#1e2127"
+set inputbar-fg             "#abb2bf"
+set notification-bg         "#282c34"
+set notification-fg         "#abb2bf"
+set notification-error-bg   "#282c34"
+set notification-error-fg   "#e06c75"
+set notification-warning-bg "#282c34"
+set notification-warning-fg "#e5c07b"
+set completion-bg           "#282c34"
+set completion-fg           "#abb2bf"
+set completion-group-bg     "#1e2127"
+set completion-group-fg     "#61afef"
+set completion-highlight-bg "#61afef"
+set completion-highlight-fg "#1e2127"
+set index-bg                "#1e2127"
+set index-fg                "#abb2bf"
+set index-active-bg         "#61afef"
+set index-active-fg         "#1e2127"
+set render-loading-bg       "#1e2127"
+set render-loading-fg       "#abb2bf"
+set highlight-color         "rgba(229, 192, 123, 0.4)"   # resultados da busca
+set highlight-active-color  "rgba(97, 175, 239, 0.5)"    # resultado atual
+
+# ------------------------------------------------------------------ atalhos extras
+# (os padrões continuam: J/K página, d página dupla, Tab índice, / busca, a/s ajuste...)
+map              i recolor
+map [fullscreen] i recolor
