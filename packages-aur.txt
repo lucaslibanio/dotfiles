@@ -1,0 +1,4 @@
+# Pacotes do AUR (instalados pelo install.sh com yay ou paru, se existir)
+
+# cores a partir do papel de parede (comando "tema"); fork mantido do pywal
+python-pywal16

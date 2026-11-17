@@ -24,6 +24,3 @@ zathura zathura-pdf-mupdf
 
 # fontes
 ttf-ubuntu-font-family noto-fonts-emoji ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono
-
-# cores a partir do papel de parede (walupdate.sh)
-python-pywal

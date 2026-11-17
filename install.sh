@@ -47,6 +47,22 @@ link() {
 
 lista() { grep -v '^\s*#' "$1" | tr -s ' \n' '\n' | grep -v '^$'; }
 
+# Instala com o pacman só o que existe nos repositórios. Um pacote que sumiu
+# (como o python-pywal) vira um aviso, em vez de cancelar a instalação toda.
+instalar_pacman() {
+    local ok=() faltando=() p
+    for p in $(lista "$1"); do
+        if pacman -Si "$p" >/dev/null 2>&1 || pacman -Sg "$p" >/dev/null 2>&1; then
+            ok+=("$p")
+        else
+            faltando+=("$p")
+        fi
+    done
+    (( ${#faltando[@]} )) && aviso "Não estão nos repositórios (pulados): ${faltando[*]}"
+    (( ${#ok[@]} )) && sudo pacman -S --needed --noconfirm "${ok[@]}"
+    return 0
+}
+
 # ---------------------------------------------------------------- pacotes
 if (( pacotes )); then
     if ! command -v pacman >/dev/null; then
@@ -54,10 +70,19 @@ if (( pacotes )); then
         exit 1
     fi
     passo "Instalando pacotes (packages.txt)"
-    lista "$DOT/packages.txt" | sudo pacman -S --needed --noconfirm -
+    instalar_pacman "$DOT/packages.txt"
     if (( extras )); then
         passo "Instalando pacotes opcionais (packages-extras.txt)"
-        lista "$DOT/packages-extras.txt" | sudo pacman -S --needed --noconfirm -
+        instalar_pacman "$DOT/packages-extras.txt"
+    fi
+
+    passo "Instalando pacotes do AUR (packages-aur.txt)"
+    aur=$(command -v yay || command -v paru || true)
+    if [ -n "$aur" ]; then
+        lista "$DOT/packages-aur.txt" | xargs "$aur" -S --needed --noconfirm ||
+            aviso "Falhou a instalação pelo AUR: $(lista "$DOT/packages-aur.txt" | tr '\n' ' ')"
+    else
+        aviso "Sem yay/paru: instale à mão do AUR: $(lista "$DOT/packages-aur.txt" | tr '\n' ' ')"
     fi
 fi
 
