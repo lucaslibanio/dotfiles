@@ -1,0 +1,507 @@
+#!/bin/bash
+
+# CLI Pomodoro Timer by Zéphyr Dassouli
+# Smooth shell-based timer with notify-send notifications
+
+# Default times (in minutes)
+WORK_TIME=25
+BREAK_TIME=5
+LONG_BREAK_TIME=15
+CYCLES_BEFORE_LONG_BREAK=3
+
+# Map colors
+COLOR0='\033[0;30m'   # black
+COLOR1='\033[0;31m'   # red
+COLOR2='\033[0;32m'   # green
+COLOR3='\033[1;33m'   # yellow
+COLOR4='\033[0;34m'   # blue
+COLOR5='\033[0;35m'   # magenta
+COLOR6='\033[0;36m'   # cyan
+COLOR7='\033[0;37m'   # white
+COLOR8='\033[1;30m'   # bright black
+COLOR9='\033[1;31m'   # bright red
+COLOR10='\033[1;32m'  # bright green
+COLOR11='\033[1;33m'  # bright yellow
+COLOR12='\033[1;34m'  # bright blue
+COLOR13='\033[1;35m'  # bright magenta
+COLOR14='\033[1;36m'  # bright cyan
+COLOR15='\033[1;37m'  # bright white
+
+# Assign semantic color names
+RED=$COLOR1
+GREEN=$COLOR2
+YELLOW=$COLOR3
+BLUE=$COLOR4
+MAGENTA=$COLOR5
+CYAN=$COLOR6
+WHITE=$COLOR7
+BRIGHT_RED=$COLOR9
+BRIGHT_GREEN=$COLOR10
+BRIGHT_YELLOW=$COLOR11
+BRIGHT_BLUE=$COLOR12
+BRIGHT_MAGENTA=$COLOR13
+BRIGHT_CYAN=$COLOR14
+BRIGHT_WHITE=$COLOR15
+NC='\033[0m' # No Color
+
+# Session tracking
+current_cycle=1
+total_work_sessions=0
+
+# Terminal control variables
+CURSOR_HIDDEN=false
+ALTERNATE_SCREEN=false
+
+# Function to hide cursor
+hide_cursor() {
+    if [ "$CURSOR_HIDDEN" = false ]; then
+        printf '\033[?25l'  # Hide cursor
+        CURSOR_HIDDEN=true
+    fi
+}
+
+# Function to show cursor
+show_cursor() {
+    if [ "$CURSOR_HIDDEN" = true ]; then
+        printf '\033[?25h'  # Show cursor
+        CURSOR_HIDDEN=false
+    fi
+}
+
+# Function to enter alternate screen buffer
+enter_alternate_screen() {
+    if [ "$ALTERNATE_SCREEN" = false ]; then
+        printf '\033[?1049h'  # Switch to alternate screen buffer
+        ALTERNATE_SCREEN=true
+    fi
+}
+
+# Function to exit alternate screen buffer
+exit_alternate_screen() {
+    if [ "$ALTERNATE_SCREEN" = true ]; then
+        printf '\033[?1049l'  # Switch back to normal screen buffer
+        ALTERNATE_SCREEN=false
+    fi
+}
+
+# Function to clear screen and position cursor at top
+clear_screen() {
+    printf '\033[2J\033[H'  # Clear screen and move cursor to top-left
+}
+
+# Function to move cursor to specific position
+move_cursor() {
+    local row=$1
+    local col=$2
+    printf '\033[%d;%dH' "$row" "$col"
+}
+
+# Function to get terminal dimensions
+get_terminal_size() {
+    TERM_WIDTH=$(tput cols)
+    TERM_HEIGHT=$(tput lines)
+}
+
+# Function to center text horizontally
+center_text() {
+    local text="$1"
+    local text_length=${#text}
+    local padding=$(( (TERM_WIDTH - text_length) / 2 ))
+    printf "%*s%s\n" $padding "" "$text"
+}
+
+# Function to print colored text centered
+print_colored_centered() {
+    local color=$1
+    local message=$2
+    local clean_message=$(echo -e "$message" | sed 's/\x1b\[[0-9;]*m//g')  # Remove ANSI codes for length calculation
+    local text_length=${#clean_message}
+    local padding=$(( (TERM_WIDTH - text_length) / 2 ))
+    printf "%*s" $padding ""
+    echo -e "${color}${message}${NC}"
+}
+
+# Function to add vertical padding
+add_vertical_padding() {
+    local content_height=15  # Approximate height of our content
+    local vertical_padding=$(( (TERM_HEIGHT - content_height) / 2 ))
+    
+    if [ $vertical_padding -gt 0 ]; then
+        for ((i=0; i<vertical_padding; i++)); do
+            echo
+        done
+    fi
+}
+
+# Function to build the complete display buffer
+build_display_buffer() {
+    local remaining_seconds=$1
+    local mode=$2
+    local cycle_info=$3
+    local total_seconds=$4
+    
+    local minutes=$((remaining_seconds / 60))
+    local seconds=$((remaining_seconds % 60))
+    
+    # Get terminal size for centering
+    get_terminal_size
+    
+    # Build the complete output in a variable
+    local output=""
+    
+    # Add vertical padding
+    local content_height=15
+    local vertical_padding=$(( (TERM_HEIGHT - content_height) / 2 ))
+    
+    if [ $vertical_padding -gt 0 ]; then
+        for ((i=0; i<vertical_padding; i++)); do
+            output+="\n"
+        done
+    fi
+    
+    # Header
+    local header="╔══════════════════════════════════════╗"
+    local title=" ║          ⏳ POMODORO TIMER           ║"
+    local bottom="╚══════════════════════════════════════╝"
+    
+    local header_padding=$(( (TERM_WIDTH - ${#header}) / 2 ))
+    output+=$(printf "%*s" $header_padding "")
+    output+="${BRIGHT_MAGENTA}${header}${NC}\n"
+    
+    local title_padding=$(( (TERM_WIDTH - ${#title}) / 2 ))
+    output+=$(printf "%*s" $title_padding "")
+    output+="${BRIGHT_MAGENTA}${title}${NC}\n"
+    
+    local bottom_padding=$(( (TERM_WIDTH - ${#bottom}) / 2 ))
+    output+=$(printf "%*s" $bottom_padding "")
+    output+="${BRIGHT_MAGENTA}${bottom}${NC}\n"
+    
+    output+="\n"
+    
+    # Mode-specific message
+    local mode_message=""
+    case $mode in
+        "work")
+            mode_message="📝 FOCUS TIME - GET TO WORK!"
+            ;;
+        "break")
+            mode_message="☕ SHORT BREAK - RELAX"
+            ;;
+        "long_break")
+            mode_message="🌟 LONG BREAK - RECHARGE"
+            ;;
+    esac
+    
+    local mode_padding=$(( (TERM_WIDTH - ${#mode_message}) / 2 ))
+    output+=$(printf "%*s" $mode_padding "")
+    
+    case $mode in
+        "work")
+            output+="${BRIGHT_RED}${mode_message}${NC}\n"
+            ;;
+        "break")
+            output+="${BRIGHT_GREEN}${mode_message}${NC}\n"
+            ;;
+        "long_break")
+            output+="${BRIGHT_BLUE}${mode_message}${NC}\n"
+            ;;
+    esac
+    
+    output+="\n"
+    
+    # Cycle info
+    local cycle_padding=$(( (TERM_WIDTH - ${#cycle_info}) / 2 ))
+    output+=$(printf "%*s" $cycle_padding "")
+    output+="${BRIGHT_CYAN}${cycle_info}${NC}\n"
+    output+="\n"
+    
+    # Timer display
+    local formatted_time=$(printf "%02d:%02d" $minutes $seconds)
+    local timer_text="⏰ $formatted_time"
+    local timer_padding=$(( (TERM_WIDTH - ${#timer_text}) / 2 ))
+    output+=$(printf "%*s" $timer_padding "")
+    output+="${BRIGHT_YELLOW}${timer_text}${NC}\n"
+    output+="\n"
+    
+    # Progress bar
+    local elapsed_seconds=$((total_seconds - remaining_seconds))
+    local progress=0
+    if [ $total_seconds -gt 0 ]; then
+        progress=$((20 * elapsed_seconds / total_seconds))
+    fi
+    
+    local progress_bar="["
+    for ((i=0; i<20; i++)); do
+        if [ $i -lt $progress ]; then
+            progress_bar+="█"
+        else
+            progress_bar+="░"
+        fi
+    done
+    progress_bar+="]"
+    
+    local progress_padding=$(( (TERM_WIDTH - ${#progress_bar}) / 2 ))
+    output+=$(printf "%*s" $progress_padding "")
+    output+="${progress_bar}\n"
+    output+="\n"
+    
+    # Instructions
+    local instructions="Press Ctrl+C to stop the timer"
+    local instr_padding=$(( (TERM_WIDTH - ${#instructions}) / 2 ))
+    output+=$(printf "%*s" $instr_padding "")
+    output+="${BRIGHT_CYAN}${instructions}${NC}\n"
+    
+    echo -e "$output"
+}
+
+# Function to display the timer in a smooth way
+display_timer() {
+    local remaining_seconds=$1
+    local mode=$2
+    local cycle_info=$3
+    local total_seconds=$4
+    
+    # Move cursor to top and build complete display
+    move_cursor 1 1
+    build_display_buffer "$remaining_seconds" "$mode" "$cycle_info" "$total_seconds"
+}
+
+# Function to send notification
+send_notification() {
+    local title=$1
+    local message=$2
+    local urgency=${3:-normal}
+    
+    /usr/bin/notify-send -u "$urgency" -t 5000 "$title" "$message"
+    
+    # Also play a simple beep if available
+    command -v paplay >/dev/null 2>&1 && paplay /usr/share/sounds/alsa/Front_Left.wav 2>/dev/null &
+}
+
+# Function to run the timer
+run_timer() {
+    local timer_minutes=$1
+    local mode=$2
+    local cycle_info=$3
+    
+    local total_seconds=$((timer_minutes * 60))
+    local remaining_seconds=$total_seconds
+    
+    # Initial display
+    clear_screen
+    display_timer $remaining_seconds "$mode" "$cycle_info" $total_seconds
+    
+    while [ $remaining_seconds -gt 0 ]; do
+        sleep 1
+        remaining_seconds=$((remaining_seconds - 1))
+        display_timer $remaining_seconds "$mode" "$cycle_info" $total_seconds
+    done
+    
+    # Show final 00:00
+    display_timer 0 "$mode" "$cycle_info" $total_seconds
+}
+
+# Function to handle cleanup on Ctrl+C
+cleanup() {
+    show_cursor
+    exit_alternate_screen
+    stty echo icanon
+    echo
+    printf "${BRIGHT_YELLOW}Timer stopped by user.${NC}\n"
+    printf "${BRIGHT_CYAN}Total work sessions completed: $total_work_sessions${NC}\n"
+    echo
+    exit 0
+}
+
+# Function to show help
+show_help() {
+    echo "Pomodoro Timer - Usage:"
+    echo "  $0 [work_minutes] [break_minutes] [long_break_minutes] [cycles_before_long_break]"
+    echo
+    echo "Default times:"
+    echo "  Work: 25 minutes"
+    echo "  Short break: 5 minutes" 
+    echo "  Long break: 15 minutes"
+    echo
+    echo "Examples:"
+    echo "  $0                    # Use default times"
+    echo "  $0 30 10 20          # 30min work, 10min break, 20min long break"
+    echo "  $0 45 15             # 45min work, 15min break (default long break)"
+    echo "  $0 45 15 5           # 45min work, 15min break with 5 cycles"
+    exit 0
+}
+
+# Parse command line arguments
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    show_help
+fi
+
+if [ $# -ge 1 ]; then
+    WORK_TIME=$1
+fi
+
+if [ $# -ge 2 ]; then
+    BREAK_TIME=$2
+fi
+
+if [ $# -ge 3 ]; then
+    LONG_BREAK_TIME=$3
+fi
+
+if [ $# -ge 4 ]; then
+    CYCLES_BEFORE_LONG_BREAK=$4
+fi
+
+# Validate input
+if ! [[ "$WORK_TIME" =~ ^[0-9]+$ ]] || [ "$WORK_TIME" -lt 1 ]; then
+    printf "${BRIGHT_RED}Error: Work time must be a positive number${NC}\n"
+    exit 1
+fi
+
+if ! [[ "$BREAK_TIME" =~ ^[0-9]+$ ]] || [ "$BREAK_TIME" -lt 1 ]; then
+    printf "${BRIGHT_RED}Error: Break time must be a positive number${NC}\n"
+    exit 1
+fi
+
+if ! [[ "$LONG_BREAK_TIME" =~ ^[0-9]+$ ]] || [ "$LONG_BREAK_TIME" -lt 1 ]; then
+    printf "${BRIGHT_RED}Error: Long break time must be a positive number${NC}\n"
+    exit 1
+fi
+
+if ! [[ "$CYCLES_BEFORE_LONG_BREAK" =~ ^[0-9]+$ ]] || [ "$CYCLES_BEFORE_LONG_BREAK" -lt 1 ]; then
+    printf "${BRIGHT_RED}Error: Number of cycle must be a positive number${NC}\n"
+    exit 1
+fi
+
+# Function to handle window resize
+handle_resize() {
+    clear_screen
+    display_timer $remaining_seconds "$mode" "$cycle_info" $total_seconds
+}
+
+# Set up signal handler for SIGWINCH
+trap handle_resize SIGWINCH
+
+# Set up signal handler for Ctrl+C
+trap cleanup SIGINT SIGTERM
+
+# Check if notify-send is available
+if ! command -v notify-send >/dev/null 2>&1; then
+    printf "${BRIGHT_RED}Warning: notify-send not found. Install libnotify for notifications.${NC}\n"
+    echo
+fi
+
+# Disable character echoing and set terminal to raw mode
+stty -echo -icanon
+
+# Setup terminal for smooth display
+enter_alternate_screen
+hide_cursor
+
+# Welcome message
+get_terminal_size
+clear_screen
+
+# Build welcome screen
+welcome_output=""
+content_height=10
+vertical_padding=$(( (TERM_HEIGHT - content_height) / 2 ))
+
+if [ $vertical_padding -gt 0 ]; then
+    for ((i=0; i<vertical_padding; i++)); do
+        welcome_output+="\n"
+    done
+fi
+
+header="╔══════════════════════════════════════╗"
+title="║     ⏳ POMODORO TIMER STARTING       ║"
+bottom="╚══════════════════════════════════════╝"
+
+header_padding=$(( (TERM_WIDTH - ${#header}) / 2 ))
+welcome_output+=$(printf "%*s" $header_padding "")
+welcome_output+="${BRIGHT_MAGENTA}${header}${NC}\n"
+
+title_padding=$(( (TERM_WIDTH - ${#title}) / 2 ))
+welcome_output+=$(printf "%*s" $title_padding "")
+welcome_output+="${BRIGHT_MAGENTA}${title}${NC}\n"
+
+bottom_padding=$(( (TERM_WIDTH - ${#bottom}) / 2 ))
+welcome_output+=$(printf "%*s" $bottom_padding "")
+welcome_output+="${BRIGHT_MAGENTA}${bottom}${NC}\n"
+
+welcome_output+="\n"
+
+settings_text="Settings:"
+settings_padding=$(( (TERM_WIDTH - ${#settings_text}) / 2 ))
+welcome_output+=$(printf "%*s" $settings_padding "")
+welcome_output+="${BRIGHT_CYAN}${settings_text}${NC}\n"
+
+work_text="Work time: ${WORK_TIME} minutes"
+work_padding=$(( (TERM_WIDTH - ${#work_text}) / 2 ))
+welcome_output+=$(printf "%*s" $work_padding "")
+welcome_output+="${BRIGHT_WHITE}${work_text}${NC}\n"
+
+break_text="Break time: ${BREAK_TIME} minutes"
+break_padding=$(( (TERM_WIDTH - ${#break_text}) / 2 ))
+welcome_output+=$(printf "%*s" $break_padding "")
+welcome_output+="${BRIGHT_WHITE}${break_text}${NC}\n"
+
+long_break_text="Long break time: ${LONG_BREAK_TIME} minutes"
+long_break_padding=$(( (TERM_WIDTH - ${#long_break_text}) / 2 ))
+welcome_output+=$(printf "%*s" $long_break_padding "")
+welcome_output+="${BRIGHT_WHITE}${long_break_text}${NC}\n"
+
+cycles_text="Long break every: ${CYCLES_BEFORE_LONG_BREAK} cycles"
+cycles_padding=$(( (TERM_WIDTH - ${#cycles_text}) / 2 ))
+welcome_output+=$(printf "%*s" $cycles_padding "")
+welcome_output+="${BRIGHT_WHITE}${cycles_text}${NC}\n"
+
+welcome_output+="\n"
+
+starting_text="Starting in 3 seconds..."
+starting_padding=$(( (TERM_WIDTH - ${#starting_text}) / 2 ))
+welcome_output+=$(printf "%*s" $starting_padding "")
+welcome_output+="${BRIGHT_YELLOW}${starting_text}${NC}\n"
+
+echo -e "$welcome_output"
+sleep 3
+
+# Main timer loop
+while true; do
+    # Work session
+    cycle_info="Cycle $current_cycle of $CYCLES_BEFORE_LONG_BREAK (Work session #$((total_work_sessions + 1)))"
+    
+    send_notification "⏳ Pomodoro Timer" "Work session $((total_work_sessions + 1)) starting!" "normal"
+    
+    run_timer $WORK_TIME "work" "$cycle_info"
+    
+    total_work_sessions=$((total_work_sessions + 1))
+    
+    send_notification "✅ Work Complete!" "Great job! Work session completed. Time for a break!" "normal"
+    
+    # Check if it's time for a long break
+    if [ $((current_cycle % CYCLES_BEFORE_LONG_BREAK)) -eq 0 ]; then
+        # Long break
+        cycle_info="Long break after $CYCLES_BEFORE_LONG_BREAK cycles"
+        
+        send_notification "🌟 Long Break Time!" "You've earned a long break! Take ${LONG_BREAK_TIME} minutes to recharge." "normal"
+        
+        run_timer $LONG_BREAK_TIME "long_break" "$cycle_info"
+        
+        send_notification "🚀 Break Over!" "Long break finished! Ready for another productive cycle?" "normal"
+    else
+        # Short break
+        cycle_info="Short break - Cycle $current_cycle of $CYCLES_BEFORE_LONG_BREAK"
+        
+        send_notification "☕ Break Time!" "Take a ${BREAK_TIME} minute break. You've earned it!" "normal"
+        
+        run_timer $BREAK_TIME "break" "$cycle_info"
+        
+        send_notification "⚡ Back to Work!" "Break time over! Ready to focus again?" "normal"
+    fi
+    
+    current_cycle=$((current_cycle + 1))
+    
+    # Brief pause between sessions
+    sleep 2
+done

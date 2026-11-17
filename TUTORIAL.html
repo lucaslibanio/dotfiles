@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dmenu, st e slock — tutorial</title>
+<style>
+  :root{
+    --bg:#1b1b1b; --panel:#222222; --line:#333; --fg:#ebdbb2; --mut:#a89984;
+    --sel:#505050; --acc:#d79921; --ok:#98971a; --red:#cc241d;
+    --mono:"Ubuntu Mono","JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+  .bar{position:sticky;top:0;z-index:5;display:flex;align-items:stretch;background:var(--panel);font-family:var(--mono);font-size:15px;border-bottom:1px solid #000}
+  .bar a{color:var(--fg);text-decoration:none;padding:6px 12px;white-space:nowrap}
+  .bar a:hover,.bar a.on{background:var(--sel)}
+  .bar .title{flex:1;padding:6px 12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+  main{max-width:980px;margin:0 auto;padding:28px 20px 80px}
+  h1{font-family:var(--mono);font-size:30px;margin:6px 0 4px}
+  h1 span{color:var(--acc)}
+  .lead{color:var(--mut);margin:0 0 20px}
+  h2{font-family:var(--mono);font-size:21px;margin:46px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--acc);display:inline-block}
+  h3{font-size:14px;text-transform:uppercase;letter-spacing:.08em;color:var(--acc);margin:26px 0 8px}
+  p{margin:8px 0}
+  a{color:var(--acc)}
+  code{font-family:var(--mono);background:#2b2b2b;padding:1px 5px;border-radius:3px;font-size:.95em}
+  pre{font-family:var(--mono);background:#141414;border:1px solid var(--line);border-left:3px solid var(--acc);padding:12px 14px;overflow:auto;border-radius:4px;font-size:14.5px;line-height:1.5;margin:10px 0}
+  kbd{font-family:var(--mono);font-size:13.5px;background:#2e2e2e;border:1px solid #444;border-bottom-width:2px;border-radius:4px;padding:1px 6px;white-space:nowrap;color:#fff}
+  .plus{color:var(--mut);margin:0 2px}
+  .callout{background:#2a2316;border:1px solid #5a4516;border-radius:6px;padding:12px 16px;margin:14px 0}
+  .callout b{color:var(--acc)}
+  .warn{background:#2a1716;border-color:#5a2421}
+  .warn b{color:#fb4934}
+  ol.steps{counter-reset:s;list-style:none;padding:0}
+  ol.steps>li{counter-increment:s;position:relative;padding:4px 0 12px 40px}
+  ol.steps>li::before{content:counter(s);position:absolute;left:0;top:4px;width:26px;height:26px;border-radius:50%;background:var(--acc);color:#111;font:700 14px/26px var(--mono);text-align:center}
+  table{width:100%;border-collapse:collapse;font-size:15px;margin:6px 0 10px}
+  th{text-align:left;color:var(--mut);font-weight:600;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;padding:6px 8px;border-bottom:1px solid var(--line)}
+  td{padding:7px 8px;border-bottom:1px solid #2a2a2a;vertical-align:top}
+  td:first-child{width:42%}
+  .new{font:700 11px var(--mono);color:#111;background:var(--ok);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:1px}
+  .chg{font:700 11px var(--mono);color:#111;background:var(--acc);border-radius:3px;padding:1px 5px;margin-left:6px;vertical-align:1px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:720px){.grid2{grid-template-columns:1fr} td:first-child{width:auto}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px 16px}
+  .card h4{margin:0 0 6px;font-family:var(--mono);font-size:15px}
+  .card p{margin:4px 0;color:#d5c4a1;font-size:15px}
+  ul.tight li{margin:5px 0}
+  /* mini dmenu */
+  .dmenu{font-family:var(--mono);background:#222;border:1px solid #000;display:flex;flex-wrap:wrap;margin:12px 0;font-size:15px}
+  .dmenu span{padding:5px 10px}
+  .dmenu .in{min-width:140px;color:#fff}
+  .dmenu .s{background:#505050;color:#fff}
+  .dmenu b{color:#d79921;font-weight:400}
+  .dmenu .s b{color:#fabd2f}
+  .dcenter{font-family:var(--mono);background:#222;border:2px solid #d79921;width:280px;margin:12px 0;font-size:15px}
+  .dcenter div{padding:4px 10px}
+  .dcenter .p{background:#505050;display:inline-block;padding:4px 10px;margin:-4px 8px -4px -10px}
+  .dcenter .s{background:#505050}
+  /* mini slock */
+  .lockdemo{position:relative;border-radius:8px;overflow:hidden;margin:14px 0;height:250px;background:
+     radial-gradient(circle at 20% 30%,#4a5a6a 0,transparent 40%),radial-gradient(circle at 75% 60%,#6a4a3a 0,transparent 45%),radial-gradient(circle at 50% 90%,#3a5a4a 0,transparent 40%),#2a2a2a;}
+  .lockdemo::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(6px)}
+  .lockdemo .c{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono)}
+  .lockdemo .t{font-size:64px;font-weight:700;line-height:1}
+  .lockdemo .d{font-size:18px;margin-top:6px}
+  .lockdemo .b{width:200px;height:4px;margin:14px 0 8px;background:#d79921;transition:background .2s}
+  .lockdemo .st{font-size:15px;font-weight:700;min-height:20px}
+  .lockdemo .m{font-size:15px;opacity:.85;margin-top:6px}
+  .states{display:flex;gap:8px;flex-wrap:wrap}
+  .states button{font:13px var(--mono);background:transparent;color:var(--mut);border:1px solid var(--line);border-radius:20px;padding:3px 11px;cursor:pointer}
+  .states button.on{border-color:var(--acc);color:var(--acc)}
+  footer{margin-top:50px;color:var(--mut);font-size:14px}
+</style>
+</head>
+<body>
+<nav class="bar" aria-label="Seções">
+  <a href="#instalar">instalar</a><a href="#dmenu">dmenu</a><a href="#st">st</a><a href="#slock">slock</a><a href="#commits">commits</a>
+  <span class="title">~/.source — dmenu · st · slock</span>
+</nav>
+
+<main>
+<h1>dmenu, st e slock <span>revisados</span></h1>
+<p class="lead">Como instalar, o que mudou e como usar cada um. Complementa a página do dwm (<code>~/.source/my-dwm/MUDANCAS.html</code>), que também foi atualizada com os atalhos novos.</p>
+
+<h2 id="instalar">1. Instalar</h2>
+<ol class="steps">
+  <li>Instale as dependências novas:
+<pre>sudo pacman -S --needed harfbuzz imlib2 xclip libnotify playerctl \
+  noto-fonts-emoji ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono</pre>
+  O <code>harfbuzz</code> é para as ligaduras do st, o <code>imlib2</code> para o fundo desfocado do slock e o <code>xclip</code> para copiar emojis e links.</li>
+  <li>Compile e instale os quatro programas:
+<pre>for p in dmenu st slock my-dwm; do
+  (cd ~/.source/$p &amp;&amp; sudo make clean install) || break
+done</pre></li>
+  <li>Reinicie o dwm com <kbd>Super</kbd><span class="plus">+</span><kbd>Ctrl</kbd><span class="plus">+</span><kbd>Shift</kbd><span class="plus">+</span><kbd>Q</kbd>. Os terminais já abertos continuam com o st antigo; os novos usam o st novo.</li>
+</ol>
+<div class="callout warn"><b>Teste o slock antes de confiar nele.</b> O código passou na checagem de sintaxe, mas não foi possível compilar e rodar aqui. Rode <code>slock</code> com outro terminal aberto em outro TTY (<kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>F2</kbd>). Se algo der errado, dá para encerrar de lá com <code>pkill slock</code>.</div>
+<div class="callout"><b>Se o make der erro:</b> me mande a saída. Se quiser voltar atrás, cada repositório tem as mudanças em commits separados (seção 5), e <code>git revert &lt;commit&gt;</code> desfaz um deles.</div>
+
+<!-- ================= DMENU ================= -->
+<h2 id="dmenu">2. dmenu</h2>
+
+<h3>Busca aproximada</h3>
+<p>Não precisa digitar o nome inteiro, nem em sequência: as letras só precisam aparecer na ordem. As letras que bateram ficam em dourado, e os resultados mais próximos vêm primeiro.</p>
+<div class="dmenu"><span class="in">lbwf</span><span class="s"><b>l</b>i<b>b</b>re<b>w</b>ol<b>f</b></span><span><b>l</b>i<b>b</b>reoffice-<b>w</b>riter-<b>f</b>resh</span></div>
+<p>O <code>dmenu_run</code> (<kbd>Super</kbd>+<kbd>P</kbd>) agora tem histórico: os programas que você mais abre aparecem primeiro. O histórico fica em <code>~/.cache/dmenu_run_history</code>.</p>
+
+<h3>Teclas dentro do dmenu</h3>
+<table>
+  <thead><tr><th>Tecla</th><th>O que faz</th></tr></thead>
+  <tbody>
+    <tr><td><kbd>Enter</kbd></td><td>Escolhe o item selecionado</td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>Usa exatamente o texto digitado, ignorando a lista</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>Escolhe e continua aberto, para marcar vários itens</td></tr>
+    <tr><td><kbd>Tab</kbd></td><td>Completa com o item selecionado</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>W</kbd></td><td>Apaga uma palavra. Agora para no <code>/</code>, então apaga o caminho por partes.<span class="chg">MUDOU</span></td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>U</kbd> · <kbd>Ctrl</kbd>+<kbd>K</kbd></td><td>Apaga tudo antes / depois do cursor</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Y</kbd> · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Y</kbd></td><td>Cola a seleção do mouse / a área de transferência</td></tr>
+    <tr><td><kbd>Esc</kbd></td><td>Fecha sem escolher</td></tr>
+    <tr><td>Mouse: clique esquerdo</td><td>Escolhe o item (no campo de texto, limpa o que foi digitado)<span class="new">NOVO</span></td></tr>
+    <tr><td>Mouse: rolar · clique direito</td><td>Muda de página · fecha<span class="new">NOVO</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Atalhos novos no dwm</h3>
+<div class="grid2">
+  <div class="card"><h4><kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>Q</kbd> menu de energia</h4>
+    <div class="dcenter"><div><span class="p">Energia:</span></div><div class="s">Bloquear</div><div>Suspender</div><div>Sair do dwm</div><div>Reiniciar</div><div>Desligar</div></div>
+    <p>Abre no centro da tela. "Sair", "Reiniciar" e "Desligar" pedem confirmação. Antes, esse atalho saía do dwm na hora, sem perguntar.</p></div>
+  <div class="card"><h4><kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>E</kbd> emoji e símbolos</h4>
+    <div class="dcenter"><div><span class="p">Emoji:</span>check</div><div class="s">✓ check</div><div>✅ check mark button</div><div>☑️ check box with check</div></div>
+    <p>São cerca de 4.000 emojis (nomes em inglês) e símbolos como → ° € ≠ (nomes em português). O escolhido vai para a área de transferência; cole com <kbd>Ctrl</kbd>+<kbd>V</kbd>.</p></div>
+</div>
+
+<h3>Opções novas para scripts</h3>
+<table>
+  <tbody>
+    <tr><td><code>-c</code></td><td>Abre centralizado em vez de como uma faixa no topo</td></tr>
+    <tr><td><code>-bw 2</code></td><td>Borda de 2px, em dourado</td></tr>
+    <tr><td><code>-h 30</code></td><td>Altura mínima de cada linha</td></tr>
+    <tr><td><code>-P</code></td><td>Modo senha: mostra pontos no lugar do texto</td></tr>
+    <tr><td><code>-F</code></td><td>Desliga a busca aproximada</td></tr>
+  </tbody>
+</table>
+<pre># exemplo: perguntar algo no meio da tela
+printf 'sim\nnão\n' | dmenu -c -l 2 -bw 2 -p "Continuar?"</pre>
+<p>As cores seguem as do dwm e também podem vir do <code>~/.Xresources</code>, com as chaves <code>dmenu.background</code>, <code>dmenu.foreground</code>, <code>dmenu.selbackground</code> e <code>dmenu.selforeground</code>. Essa leitura estava quebrada antes: a função existia, mas nunca era chamada.</p>
+
+<!-- ================= ST ================= -->
+<h2 id="st">3. st</h2>
+<p>A fonte agora é Ubuntu Mono (antes era Courier New), com fallback para ícones e emoji. A paleta é gruvbox, com fundo <code>#222222</code>, igual ao da barra do dwm.</p>
+
+<h3>Atalhos</h3>
+<table>
+  <thead><tr><th>Tecla</th><th>O que faz</th></tr></thead>
+  <tbody>
+    <tr><td>Selecionar com o mouse</td><td>Já copia para a área de transferência: cole em qualquer lugar com <kbd>Ctrl</kbd>+<kbd>V</kbd>.<span class="new">NOVO</span></td></tr>
+    <tr><td>Duplo clique · triplo clique</td><td>Seleciona a palavra (sem aspas nem parênteses) · a linha<span class="chg">MUDOU</span></td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> · <kbd>V</kbd></td><td>Copiar · colar</td></tr>
+    <tr><td>Roda do mouse</td><td>Rola o histórico. Dentro do vim, less ou htop, continua indo para o programa.<span class="new">NOVO</span></td></tr>
+    <tr><td><kbd>Shift</kbd>+<kbd>PgUp</kbd> / <kbd>PgDn</kbd></td><td>Rola o histórico uma página</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>PgUp</kbd> / <kbd>PgDn</kbd></td><td>Rola 3 linhas<span class="new">NOVO</span></td></tr>
+    <tr><td><kbd>Alt</kbd>+<kbd>L</kbd></td><td>Lista os links visíveis na tela no dmenu e abre o escolhido no navegador<span class="new">NOVO</span></td></tr>
+    <tr><td><kbd>Alt</kbd>+<kbd>Y</kbd></td><td>Mesma lista, mas copia o link<span class="new">NOVO</span></td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>Abre outro st na mesma pasta<span class="new">NOVO</span></td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>K</kbd> / <kbd>J</kbd> · <kbd>Home</kbd></td><td>Aumenta / diminui a fonte · volta ao tamanho normal</td></tr>
+    <tr><td><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>↑</kbd> / <kbd>↓</kbd> · <kbd>→</kbd></td><td>Opacidade + / − · volta ao padrão. Só faz efeito com um compositor, como o picom.<span class="chg">MUDOU</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Outras mudanças</h3>
+<div class="grid2">
+  <div class="card"><h4>Sublinhado ondulado (undercurl)</h4><p>O neovim marca erros com um sublinhado ondulado. Não precisa configurar nada, mas o terminfo novo só é instalado pelo <code>make install</code>.</p></div>
+  <div class="card"><h4>Linhas de caixa (boxdraw)</h4><p>As molduras do htop, do tmux e do <code>tree</code> são desenhadas pelo próprio st, sem falhas entre os caracteres.</p></div>
+  <div class="card"><h4>Ligaduras</h4><p>Ativas, mas a Ubuntu Mono não tem ligaduras. Para ver <code>-&gt;</code> virar <code>→</code>, troque a fonte em <code>config.h</code> para <code>JetBrains Mono</code>.</p></div>
+  <div class="card"><h4>Texto centralizado (vertcenter)</h4><p>Se você aumentar <code>chscale</code> (espaço entre linhas), o texto fica no meio da linha, e não grudado no topo.</p></div>
+  <div class="card"><h4>Recarregar cores</h4><p>Depois de mudar o <code>~/.Xresources</code>, rode <code>xrdb ~/.Xresources &amp;&amp; pkill -USR1 st</code> e todos os terminais abertos atualizam.</p></div>
+  <div class="card"><h4>Menu de aplicativos</h4><p>O <code>st.desktop</code> é instalado junto, e o st passa a aparecer como terminal para o <code>xdg-open</code> e os gerenciadores de arquivos.</p></div>
+</div>
+
+<!-- ================= SLOCK ================= -->
+<h2 id="slock">4. slock</h2>
+<p>A tela de bloqueio foi redesenhada. Clique nos estados abaixo para ver o que cada um mostra:</p>
+<div class="states" id="states">
+  <button class="on" data-s="init">bloqueado</button><button data-s="input">digitando</button><button data-s="fail">senha errada</button><button data-s="caps">Caps Lock</button>
+</div>
+<div class="lockdemo" aria-label="Simulação da tela de bloqueio">
+  <div class="c"><div class="t">19:42</div><div class="d">terça-feira, 17 de novembro</div><div class="b" id="lb"></div><div class="st" id="ls"></div><div class="m">RECEBA GRAÇAS A DEUS</div></div>
+</div>
+<table>
+  <thead><tr><th>O que</th><th>Como funciona</th></tr></thead>
+  <tbody>
+    <tr><td>Fundo</td><td>A própria tela, desfocada e escurecida. Para pixelado, use <code>pixelsize = 12</code>; para cor sólida, <code>blurradius = 0</code>.<span class="new">NOVO</span></td></tr>
+    <tr><td>Relógio, data e mensagem</td><td>Centralizados em <b>cada</b> monitor, data em português e acentos funcionando. Antes, a mensagem saía "GRACAS" e o relógio caía entre os monitores.<span class="chg">MUDOU</span></td></tr>
+    <tr><td>Barra abaixo da data</td><td>Cinza: digitando · vermelha: senha incorreta · dourada: Caps Lock ligado.<span class="new">NOVO</span></td></tr>
+    <tr><td>Cancelar rápido</td><td>Mexer o mouse ou apertar uma tecla nos <b>3 primeiros segundos</b> desbloqueia sem senha. Isso não vale depois de suspender o computador.<span class="new">NOVO</span></td></tr>
+    <tr><td>Tela apaga</td><td>O monitor desliga depois de 60 s bloqueado. A configuração anterior volta ao desbloquear.<span class="new">NOVO</span></td></tr>
+    <tr><td>Teclas de mídia</td><td>Volume, mudo, microfone, brilho e play/pause funcionam com a tela bloqueada, e a barra do dwm atualiza.<span class="new">NOVO</span></td></tr>
+    <tr><td>Mensagem temporária</td><td><code>slock -m "Volto em 10 min"</code></td></tr>
+    <tr><td>Foto após senha errada</td><td>Removida, como você pediu. O slock não roda mais nenhum comando depois de senhas erradas.<span class="chg">REMOVIDO</span></td></tr>
+  </tbody>
+</table>
+
+<h3>Configuração (<code>~/.source/slock/config.h</code>)</h3>
+<pre>static const int blurradius   = 12;   /* desfoque do fundo; 0 = cor sólida   */
+static const int pixelsize    = 0;    /* 12 = pixelado                        */
+static const double dim       = 0.4;  /* quanto escurecer o fundo (0 a 1)     */
+static const unsigned int monitortime = 60;  /* segundos até apagar a tela  */
+static const int timetocancel = 3;    /* janela do cancelar rápido; 0 desliga */
+static const char *message    = "RECEBA GRAÇAS A DEUS";
+static const char *fontfamily = "Ubuntu Mono";</pre>
+<p>As cores também podem vir do <code>~/.Xresources</code>: <code>slock.color0</code> (bloqueado), <code>slock.color4</code> (digitando), <code>slock.color1</code> (erro), <code>slock.color3</code> (Caps Lock) e <code>slock.foreground</code> (texto).</p>
+<div class="callout"><b>Por que as teclas de mídia funcionam:</b> por segurança, o slock roda como o usuário <code>nobody</code> enquanto a tela está bloqueada, e por isso ele não conseguiria mexer no seu áudio. Antes de trocar de usuário, ele cria um processo auxiliar com o seu usuário, que só sabe rodar os comandos da lista <code>mediakeys</code> do <code>config.h</code>.</div>
+<div class="callout"><b>Antes do primeiro make:</b> não consegui ler o seu <code>config.h</code> antigo do slock, então ele foi renomeado para <code>config.h.antigo</code>. Se você tinha algo diferente nele, compare com <code>diff config.h.antigo config.h</code>.</div>
+
+<!-- ================= COMMITS ================= -->
+<h2 id="commits">5. Commits</h2>
+<table>
+  <thead><tr><th>Repositório</th><th>Commits (do mais novo para o mais antigo)</th></tr></thead>
+  <tbody>
+    <tr><td><code>dmenu</code></td><td><code>6e33df1</code> suspender no menu de energia · <code>717fb4f</code> scripts power/emoji/histórico · <code>b847fc8</code> 7 patches + config · <code>86bf306</code> limpeza · <code>9dd1c6d</code> fonte</td></tr>
+    <tr><td><code>st</code></td><td><code>f7d985f</code> 12 patches + config + st-urlhandler · <code>f74b85b</code> limpeza e patches que já estavam aplicados</td></tr>
+    <tr><td><code>slock</code></td><td><code>3244650</code> tela nova + 6 recursos · <code>f027a77</code> limpeza e patches que já estavam aplicados</td></tr>
+    <tr><td><code>my-dwm</code></td><td><code>5adff31</code> atalhos de energia e emoji, dmenu com <code>-i</code></td></tr>
+  </tbody>
+</table>
+<p>Os patches baixados ficam em <code>patches/</code> em cada repositório. Vários foram adaptados à mão porque não encaixavam nos patches que você já tinha; os commits explicam onde.</p>
+
+<footer>Também salvo em <code>~/.source/TUTORIAL.html</code>.</footer>
+</main>
+
+<script>
+const S = {
+  init:  {bar:'transparent', st:''},
+  input: {bar:'#505050', st:''},
+  fail:  {bar:'#cc241d', st:'Senha incorreta'},
+  caps:  {bar:'#d79921', st:'Caps Lock ligado'},
+};
+const lb = document.getElementById('lb'), ls = document.getElementById('ls');
+document.querySelectorAll('#states button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('#states button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  const s = S[b.dataset.s];
+  lb.style.background = s.bar; ls.textContent = s.st;
+}));
+lb.style.background = S.init.bar;
+</script>
+</body>
+</html>

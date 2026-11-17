@@ -1,0 +1,94 @@
+#!/usr/bin/env bash
+# mesacam - expõe a câmera traseira do celular como webcam em /dev/video0
+#
+# Uso:
+#   mesacam              # 1920x1440, orientação 180
+#   mesacam 4000x3000    # resolução alta (cai para 15fps automaticamente)
+#   ORIENT=270 mesacam   # outra rotação
+#
+# Variáveis sobrescrevíveis:
+#   SIZE    resolução de captura   (padrão 1920x1440)
+#   ORIENT  rotação                (0|90|180|270|flip0|flip90|flip180|flip270)
+#   DEV     dispositivo v4l2       (padrão /dev/video0)
+#   CAMID   id da câmera           (padrão 0 = traseira principal)
+#   FPS     taxa de quadros        (padrão 30, ou 15 em alta resolução)
+
+set -euo pipefail
+
+SIZE="${1:-${SIZE:-1920x1440}}"
+ORIENT="${ORIENT:-180}"
+DEV="${DEV:-/dev/video0}"
+CAMID="${CAMID:-0}"
+
+# 4000x3000 a 30fps sobrecarrega o encoder do celular sem ganho nenhum,
+# já que a folha está parada.
+if [[ $SIZE == 4000x* || $SIZE == 3840x* ]]; then
+    FPS="${FPS:-15}"
+else
+    FPS="${FPS:-30}"
+fi
+
+die() { printf 'mesacam: %s\n' "$@" >&2; exit 1; }
+
+for cmd in scrcpy adb; do
+    command -v "$cmd" >/dev/null || die "$cmd não encontrado no PATH."
+done
+
+# --- v4l2loopback ------------------------------------------------------------
+
+load_module() {
+    sudo modprobe v4l2loopback exclusive_caps=1 card_label="Camera Mesa"
+}
+
+if ! lsmod | grep -q '^v4l2loopback'; then
+    echo "mesacam: carregando v4l2loopback..."
+    load_module
+fi
+
+# Sem exclusive_caps=1 o Chromium/Firefox não lista o dispositivo.
+caps=/sys/module/v4l2loopback/parameters/exclusive_caps
+if [[ -r $caps && ! $(<"$caps") =~ Y ]]; then
+    echo "mesacam: exclusive_caps desligado, recarregando o módulo..."
+    sudo modprobe -r v4l2loopback \
+        || die "módulo em uso. Feche o navegador e tente de novo."
+    load_module
+fi
+
+[[ -e $DEV ]] || die "$DEV não existe."
+
+# --- celular -----------------------------------------------------------------
+
+state=$(adb devices | awk 'NR>1 && NF {print $2; exit}')
+
+case "$state" in
+    device) ;;
+    unauthorized)
+        die "autorize a depuração USB na tela do celular."
+        ;;
+    "")
+        die "nenhum aparelho encontrado." \
+            "  - cabo conectado?" \
+            "  - puxe as notificações e troque o USB de carregamento" \
+            "    para transferência de arquivos (One UI 8)."
+        ;;
+    *)
+        die "aparelho em estado '$state'."
+        ;;
+esac
+
+# --- captura -----------------------------------------------------------------
+
+echo "mesacam: $SIZE @ ${FPS}fps, rotação $ORIENT -> $DEV"
+echo "mesacam: visualize com  ffplay -f v4l2 $DEV"
+echo "mesacam: Ctrl-C para parar."
+
+exec scrcpy \
+    --video-source=camera \
+    --camera-id="$CAMID" \
+    --camera-size="$SIZE" \
+    --camera-fps="$FPS" \
+    --video-bit-rate=20M \
+    --capture-orientation="$ORIENT" \
+    --v4l2-sink="$DEV" \
+    --no-playback \
+    --no-audio

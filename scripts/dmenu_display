@@ -1,0 +1,35 @@
+#!/bin/bash
+# Escolhe como usar os monitores (notebook + monitor externo) pelo dmenu.
+# Substitui o arrumar_monitor.sh, que tinha as saídas fixas no código.
+
+mapfile -t connected < <(xrandr | awk '/ connected/ {print $1}')
+internal=$(printf '%s\n' "${connected[@]}" | grep -E '^(eDP|LVDS|DSI)' | head -1)
+external=$(printf '%s\n' "${connected[@]}" | grep -vx "${internal:-NENHUM}" | head -1)
+
+if [ -z "$external" ]; then
+    xrandr --output "$internal" --auto --primary
+    notify-send "Monitores" "Nenhum monitor externo conectado" 2>/dev/null
+    exit 0
+fi
+
+choice=$(printf '%s\n' \
+    "Estendido: externo à esquerda" \
+    "Estendido: externo à direita" \
+    "Estendido: externo acima" \
+    "Espelhado" \
+    "Só o externo" \
+    "Só o notebook" \
+    | dmenu -c -i -l 6 -bw 2 -p "Monitores:") || exit 0
+
+case "$choice" in
+    *esquerda) xrandr --output "$internal" --auto --primary --output "$external" --auto --left-of "$internal" ;;
+    *direita)  xrandr --output "$internal" --auto --primary --output "$external" --auto --right-of "$internal" ;;
+    *acima)    xrandr --output "$internal" --auto --primary --output "$external" --auto --above "$internal" ;;
+    Espelhado) xrandr --output "$internal" --auto --primary --output "$external" --auto --same-as "$internal" ;;
+    "Só o externo")  xrandr --output "$external" --auto --primary --output "$internal" --off ;;
+    "Só o notebook") xrandr --output "$internal" --auto --primary --output "$external" --off ;;
+esac
+
+# reaplica o papel de parede (se houver ~/.fehbg) para cobrir a área nova
+[ -x ~/.fehbg ] && ~/.fehbg
+notify-send "Monitores" "$choice" 2>/dev/null

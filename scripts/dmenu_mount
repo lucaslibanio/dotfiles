@@ -1,0 +1,47 @@
+#!/bin/bash
+# Monta e desmonta pendrives/HDs externos pelo dmenu, sem sudo (usa udisks2).
+# Os discos montados aparecem em /run/media/$USER/.
+
+notify() { notify-send "Discos" "$1" 2>/dev/null; echo "$1"; }
+
+# Partições de discos removíveis/USB, uma por linha: "dispositivo (tamanho, rótulo)".
+# $1 = "livres" (não montadas) ou "montadas" (em /run/media)
+list() {
+    local NAME TYPE SIZE FSTYPE LABEL MOUNTPOINT HOTPLUG
+    # -P imprime CHAVE="valor"; o eval preenche as variáveis acima
+    while read -r line; do
+        eval "$line"
+        [ "$TYPE" = part ] && [ "$HOTPLUG" = 1 ] || continue
+        [ -n "$FSTYPE" ] && [ "$FSTYPE" != crypto_LUKS ] || continue
+        if [ "$1" = livres ] && [ -z "$MOUNTPOINT" ]; then
+            echo "$NAME ($SIZE, ${LABEL:-sem rótulo})"
+        elif [ "$1" = montadas ] && [[ "$MOUNTPOINT" == /run/media/* ]]; then
+            echo "$NAME ($MOUNTPOINT)"
+        fi
+    done < <(lsblk -pPno NAME,TYPE,SIZE,FSTYPE,LABEL,MOUNTPOINT,HOTPLUG)
+}
+
+action=$(printf 'Montar\nDesmontar\n' | dmenu -c -i -l 2 -bw 2 -p "Discos:") || exit 0
+
+case "$action" in
+Montar)
+    disks=$(list livres)
+    [ -n "$disks" ] || { notify "Nenhum disco externo para montar"; exit 0; }
+    sel=$(printf '%s\n' "$disks" | dmenu -c -i -l 10 -bw 2 -p "Montar:") || exit 0
+    dev=${sel%% *}
+    if out=$(udisksctl mount -b "$dev" 2>&1); then notify "$out"; else notify "Erro: $out"; fi
+    ;;
+Desmontar)
+    disks=$(list montadas)
+    [ -n "$disks" ] || { notify "Nenhum disco externo montado"; exit 0; }
+    sel=$(printf '%s\n' "$disks" | dmenu -c -i -l 10 -bw 2 -p "Desmontar:") || exit 0
+    dev=${sel%% *}
+    if out=$(udisksctl unmount -b "$dev" 2>&1); then
+        # desliga o disco inteiro, para poder tirar com segurança
+        udisksctl power-off -b "/dev/$(lsblk -no PKNAME "$dev")" 2>/dev/null
+        notify "$dev desmontado. Pode remover."
+    else
+        notify "Erro: $out (algum programa ainda está usando o disco?)"
+    fi
+    ;;
+esac
