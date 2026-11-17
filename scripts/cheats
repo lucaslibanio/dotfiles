@@ -1,0 +1,218 @@
+#!/bin/bash
+# Cheat sheet hub for this desktop.
+#
+#   cheats              every cheat sheet in the terminal
+#   cheats st           just one program (dwm, dmenu, st, slock, scripts, nvim...)
+#   cheats --menu       searchable list in dmenu (Super+F1)
+#   cheats --check      compare the dwm and st sheets against their config.h
+#   cheats --list       names of the available sheets
+#
+# Sheets live in <repo>/cheats/<program>.txt: one "key<TAB>description" per line,
+# section titles start with "# ". The nvim sheet is generated from keymaps with "desc".
+set -eu
+
+# the repo is the folder above this script (works through the ~/Scripts link)
+DOT="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+CHEATS="$DOT/cheats"
+CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/cheats"
+NVIMCONF="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+
+# ------------------------------------------------------------------ nvim
+# Builds $CACHE/nvim.txt from the nvim keymaps that have a description (desc).
+# Only rebuilt when something in ~/.config/nvim changed since last time.
+nvim_sheet() {
+    command -v nvim >/dev/null && [ -d "$NVIMCONF" ] || return 0
+    local out="$CACHE/nvim.txt"
+    mkdir -p "$CACHE"
+    if [ -f "$out" ] && [ -z "$(find "$NVIMCONF" -newer "$out" -print -quit 2>/dev/null)" ]; then
+        return 0
+    fi
+    # the Lua below runs inside nvim with your config loaded, without opening a window
+    local lua; lua=$(mktemp --suffix=.lua)
+    cat > "$lua" <<'LUA'
+local names = { n = "Normal", v = "Visual", x = "Visual", i = "Insert", o = "Operator-pending", t = "Terminal" }
+local function keyname(lhs)
+    lhs = lhs:gsub(" ", "<Space>")
+    local leader = vim.g.mapleader
+    if leader then
+        leader = (leader == " ") and "<Space>" or leader
+        lhs = lhs:gsub("^" .. vim.pesc(leader), "<Leader>")
+    end
+    return lhs
+end
+local lines, seen = {}, {}
+for _, mode in ipairs({ "n", "x", "i", "o", "t" }) do
+    local maps = {}
+    for _, m in ipairs(vim.api.nvim_get_keymap(mode)) do
+        if m.desc and m.desc ~= "" and not m.lhs:match("^<Plug>") then
+            table.insert(maps, m)
+        end
+    end
+    table.sort(maps, function(a, b) return a.lhs < b.lhs end)
+    if #maps > 0 then
+        table.insert(lines, "# " .. names[mode] .. " mode")
+        for _, m in ipairs(maps) do
+            local id = mode .. m.lhs
+            if not seen[id] then
+                seen[id] = true
+                table.insert(lines, keyname(m.lhs) .. "\t" .. m.desc:gsub("[\t\n]", " "))
+            end
+        end
+        table.insert(lines, "")
+    end
+end
+io.stdout:write(table.concat(lines, "\n") .. "\n")
+LUA
+    timeout 15 nvim --headless -c "luafile $lua" -c 'qa!' > "$out.tmp" 2>/dev/null \
+        && mv "$out.tmp" "$out" || rm -f "$out.tmp"
+    rm -f "$lua"
+}
+
+# sheet file of a program (nvim comes from the cache)
+sheet_file() {
+    if [ "$1" = nvim ]; then echo "$CACHE/nvim.txt"; else echo "$CHEATS/$1.txt"; fi
+}
+
+list_sheets() {
+    nvim_sheet
+    for f in "$CHEATS"/*.txt; do basename "$f" .txt; done
+    [ -s "$CACHE/nvim.txt" ] && echo nvim
+    true
+}
+
+# ------------------------------------------------------------------ terminal
+show() {
+    local prog f
+    for prog in "$@"; do
+        f=$(sheet_file "$prog")
+        [ -s "$f" ] || { echo "No cheat sheet for \"$prog\". Available: $(list_sheets | tr '\n' ' ')" >&2; return 1; }
+        # two passes over the file: the first one measures the key column
+        awk -F'\t' -v prog="$prog" '
+            NR == FNR { if (NF >= 2 && $1 !~ /^#/ && length($1) > w) w = length($1); next }
+            FNR == 1 { if (w > 44) w = 44; printf "\n\033[1;7;33m %s \033[0m\n", toupper(prog) }
+            /^# Format:|^# Lines starting/ { next }
+            /^# / { printf "\n\033[1;33m%s\033[0m\n", substr($0, 3); next }
+            /^$/ { next }
+            NF >= 2 { printf "  \033[1m%-*s\033[0m  %s\n", w, $1, $2 }
+        ' "$f" "$f"
+    done
+    echo
+}
+
+terminal_view() {
+    local progs
+    if [ $# -gt 0 ]; then progs=("$@"); else mapfile -t progs < <(list_sheets); fi
+    # page only if it does not fit on screen
+    if [ -t 1 ] && [ "$(show "${progs[@]}" | wc -l)" -gt "$(tput lines 2>/dev/null || echo 40)" ]; then
+        show "${progs[@]}" | less -R
+    else
+        show "${progs[@]}"
+    fi
+}
+
+# ------------------------------------------------------------------ dmenu
+menu_view() {
+    local prog
+    list_sheets | while read -r prog; do
+        awk -F'\t' -v prog="$prog" '
+            /^#/ || /^$/ { next }
+            NF >= 2 { printf "%-7s %-34s %s\n", prog, $1, $2 }
+        ' "$(sheet_file "$prog")"
+    done | dmenu -c -i -l 25 -bw 2 -p "Cheats:" >/dev/null || true
+}
+
+# ------------------------------------------------------------------ check
+# Turns the keys[] / shortcuts[] lines of a config.h into "Super+Shift+Q".
+# $1 = file, $2 = start of the block, $3 = what MODKEY means (Super in dwm, Alt in st)
+keys_from_config() {
+    awk -v start="$2" -v modkey="$3" '
+        function keyname_of(k) {
+            sub(/^XF86XK_|^XK_/, "", k)
+            if (k in keymap) return keymap[k]
+            return (length(k) == 1) ? toupper(k) : k
+        }
+        BEGIN {
+            split("Return=Enter grave=` space=Space comma=, period=. Page_Up=PgUp Page_Down=PgDn " \
+                  "Num_Lock=NumLock AudioRaiseVolume=Vol+ AudioLowerVolume=Vol- AudioMute=Mute " \
+                  "AudioMicMute=MicMute MonBrightnessUp=Bright+ MonBrightnessDown=Bright- " \
+                  "AudioPlay=Play AudioNext=Next AudioPrev=Prev", pairs, " ")
+            for (i in pairs) { split(pairs[i], kv, "="); keymap[kv[1]] = kv[2] }
+        }
+        index($0, start) { inside = 1; next }
+        inside && /^};/ { inside = 0 }
+        !inside { next }
+        /TAGKEYS\(/ {
+            if (!tags++) print "Super+1-9\nSuper+Ctrl+1-9\nSuper+Shift+1-9\nSuper+Ctrl+Shift+1-9"
+            next
+        }
+        match($0, /\{[ \t]*[^,]+,[ \t]*(XF86XK_|XK_)[A-Za-z0-9_]+/) {
+            s = substr($0, RSTART + 1, RLENGTH - 1)
+            split(s, p, ",")
+            mods = p[1]; gsub(/[ \t]/, "", mods)
+            k = p[2];    gsub(/[ \t]/, "", k)
+            out = ""
+            if (mods ~ /MODKEY/)   out = out modkey "+"
+            if (mods ~ /Mod4Mask/) out = out "Super+"
+            if (mods ~ /ControlMask|TERMMOD/) out = out "Ctrl+"
+            if (mods ~ /ALTKEY|Mod1Mask/) out = out "Alt+"
+            if (mods ~ /ShiftMask|TERMMOD/) out = out "Shift+"
+            print out keyname_of(k)
+        }
+    ' "$1"
+}
+
+# keys written in a sheet: splits "A / B", skips mouse actions and commands (they contain spaces)
+keys_from_sheet() {
+    awk -F'\t' '/^#/ || /^$/ { next } NF >= 2 { n = split($1, t, " / "); for (i = 1; i <= n; i++) print t[i] }' "$1" |
+        grep -v ' '
+}
+
+# canonical form for comparing: modifiers in a fixed order, lowercase
+canon() {
+    awk -F'+' '{
+        keyname = $NF; if (keyname == "" && NF > 1) keyname = "+"
+        m = ""
+        for (i = 1; i < NF; i++) mods[$i] = 1
+        split("Super Ctrl Alt Shift", order, " ")
+        for (j = 1; j <= 4; j++) if (order[j] in mods) m = m order[j] "+"
+        delete mods
+        print tolower(m keyname)
+    }' | sort -u
+}
+
+check() {
+    local prog cfg start mod problems=0
+    for prog in dwm st; do
+        case $prog in
+            dwm) cfg="$DOT/my-dwm/config.h"; start="static const Key keys[]"; mod=Super ;;
+            st)  cfg="$DOT/st/config.h";     start="static Shortcut shortcuts[]"; mod=Alt ;;
+        esac
+        [ -f "$cfg" ] || cfg="${cfg%.h}.def.h"
+        if [ ! -f "$cfg" ] || [ ! -f "$CHEATS/$prog.txt" ]; then
+            echo "== $prog: missing $cfg or $CHEATS/$prog.txt"; problems=1; continue
+        fi
+        local from_config from_sheet
+        from_config=$(keys_from_config "$cfg" "$start" "$mod" | canon)
+        from_sheet=$(keys_from_sheet "$CHEATS/$prog.txt" | canon)
+        local missing extra
+        missing=$(comm -23 <(echo "$from_config") <(echo "$from_sheet"))
+        extra=$(comm -13 <(echo "$from_config") <(echo "$from_sheet"))
+        echo "== $prog ($(echo "$from_config" | wc -l) keys in config.h)"
+        if [ -n "$missing" ]; then
+            echo "   in config.h but missing from the sheet:"; echo "$missing" | sed 's/^/     /'; problems=1
+        fi
+        if [ -n "$extra" ]; then
+            echo "   in the sheet but not in config.h:"; echo "$extra" | sed 's/^/     /'; problems=1
+        fi
+        [ -z "$missing$extra" ] && echo "   all good"
+    done
+    return $problems
+}
+
+case "${1:-}" in
+    --menu)       menu_view ;;
+    --check)      check ;;
+    --list)       list_sheets ;;
+    -h|--help)    sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//' ;;
+    *)            terminal_view "$@" ;;
+esac

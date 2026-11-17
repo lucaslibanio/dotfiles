@@ -1,0 +1,31 @@
+# Copy and paste
+select with the mouse	already copies (paste with Ctrl+V anywhere)
+double click / triple click	select word / line
+Ctrl+Shift+C / Ctrl+Shift+V	copy / paste
+Ctrl+Shift+Y / Shift+Insert	paste the mouse selection
+middle click	paste the mouse selection
+
+# Scrollback
+mouse wheel	scroll history (inside vim/less it goes to the program)
+Shift+PgUp / Shift+PgDn	one page
+Ctrl+Shift+PgUp / Ctrl+Shift+PgDn	3 lines
+
+# Links
+Alt+L	pick a link on screen with dmenu and open it
+Alt+Y	pick a link on screen with dmenu and copy it
+
+# Window
+Ctrl+Shift+Enter	new terminal in the same directory
+Ctrl+Shift+K / Ctrl+Shift+J	bigger / smaller font
+Ctrl+Shift+Home	reset font size
+Ctrl+Shift+Up / Ctrl+Shift+Down	opacity + / - (needs xcompmgr)
+Ctrl+Shift+Right	reset opacity
+
+# Rarely used
+Print / Shift+Print	print selection / screen (st.printer)
+Ctrl+Print	toggle printer mode
+Break	send break to the terminal
+Ctrl+Shift+NumLock	toggle numeric keypad mode
+
+# Other
+pkill -USR1 st	reload colors in all open terminals

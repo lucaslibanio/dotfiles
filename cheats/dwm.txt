@@ -1,0 +1,79 @@
+# Format: key<TAB>description. Several keys on one line: separate with " / ".
+# Lines starting with "# " become section titles. See: cheats --help
+
+# Programs
+Super+P	run a program (dmenu, with history)
+Super+Shift+Enter	terminal (st)
+Super+W	web browser (LibreWolf)
+Super+E	file manager
+Super+`	scratchpad: floating terminal that shows/hides
+Super+F1	this cheat sheet (all programs)
+Super+Shift+L	lock the screen (slock)
+Super+Shift+A	screenshot of an area (copies and asks for a name)
+Super+Shift+S	screenshot of an area with editor (satty)
+Super+Shift+E	emoji and symbol picker (copies)
+Super+Shift+D	displays: extend, mirror, single
+Super+Shift+M	mount / unmount USB drives
+Super+Shift+T	toggle pywal colors (tema)
+Super+Shift+Q	power menu: lock, suspend, quit, reboot, shut down
+
+# Windows
+Super+J / Super+K	focus next / previous
+Super+Shift+J / Super+Shift+K	move window down / up the stack
+Super+Enter	swap window with master
+Super+H / Super+L	shrink / grow master area
+Super+I / Super+D	more / fewer windows in master
+Super+Shift+F	true fullscreen
+Super+Shift+Space	toggle floating
+Super+B	show / hide the bar
+Super+Shift+C	close window
+Super+Ctrl+C	close the other windows in the tag
+Super+Ctrl+Shift+C	close all windows in the tag
+
+# Layouts
+Super+T	tile []=
+Super+F	monocle [M]
+Super+R	dwindle [\]
+Super+Q	row grid ###
+Super+M	centered master |M|
+Super+Ctrl+, / Super+Ctrl+.	previous / next layout (all 14)
+Super+Space	back to the previous layout
+
+# Tags and monitors
+Super+1-9	view tag
+Super+Shift+1-9	send window to tag
+Super+Ctrl+1-9	toggle tag alongside the current one
+Super+Ctrl+Shift+1-9	add / remove window from tag
+Super+0	view all tags
+Super+Shift+0	window on all tags
+Super+Tab	back to the previous tag
+Super+, / Super+.	focus previous / next monitor
+Super+Shift+, / Super+Shift+.	send window to the other monitor
+
+# Gaps
+Super+Alt+U / Super+Alt+Shift+U	all gaps + / -
+Super+Alt+I / Super+Alt+Shift+I	inner gaps + / -
+Super+Alt+O / Super+Alt+Shift+O	outer gaps + / -
+Super+Alt+6 / Super+Alt+Shift+6	inner horizontal + / -
+Super+Alt+7 / Super+Alt+Shift+7	inner vertical + / -
+Super+Alt+8 / Super+Alt+Shift+8	outer horizontal + / -
+Super+Alt+9 / Super+Alt+Shift+9	outer vertical + / -
+Super+Alt+0	toggle gaps
+Super+Alt+Shift+0	reset gaps
+
+# Media
+Vol+ / Vol- / Mute	volume (updates the bar)
+MicMute	mute the microphone
+Bright+ / Bright-	screen brightness
+Play / Next / Prev	media control (playerctl)
+
+# Mouse
+Super+left drag	move window
+Super+right drag	resize window
+Super+middle click	toggle floating
+scroll on the layout symbol	change layout
+click or scroll on a status block	block action (volume, battery, date...)
+
+# System
+Super+F5	reload Xresources colors
+Super+Ctrl+Shift+Q	restart dwm (keeps windows)

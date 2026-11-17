@@ -1,0 +1,18 @@
+# Colors
+tema	toggle pywal colors (or Super+Shift+T)
+tema image.jpg	new colors from an image
+tema status	which theme is active
+
+# Disks and displays
+dmenu_mount	mount / unmount USB drives (Super+Shift+M)
+dmenu_display	displays (Super+Shift+D)
+cripto_pendrive.sh open /dev/sdb1	open encrypted USB drive
+cripto_pendrive.sh close	close encrypted USB drive
+
+# Other
+layout_change.sh	keyboard ABNT2 <-> US international
+conserv_mode.sh	battery conservation mode
+camera_cell	phone as a webcam
+download_music.sh URL album	download an album (yt-dlp)
+pomodoro	pomodoro timer
+cheats --check	check that the cheat sheets match config.h

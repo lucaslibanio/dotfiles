@@ -1,0 +1,20 @@
+# Inside dmenu
+type loose letters	fuzzy search: "lbwf" finds librewolf
+Enter	pick the item
+Shift+Enter	use the typed text, ignoring the list
+Ctrl+Enter	pick and stay open (several items)
+Tab	complete with the selected item
+Ctrl+W	delete back to the previous / or space
+Ctrl+U / Ctrl+K	delete before / after the cursor
+Ctrl+Y / Ctrl+Shift+Y	paste mouse selection / clipboard
+Esc / right click	close
+left click / scroll	pick / change page
+
+# Options for scripts
+dmenu -c	centered on screen
+dmenu -bw 2	gold border
+dmenu -l 10	vertical list with 10 lines
+dmenu -h 30	minimum line height
+dmenu -P	password mode
+dmenu -F	no fuzzy search
+dmenu -i	case insensitive

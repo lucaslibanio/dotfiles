@@ -1,0 +1,14 @@
+# While locked
+type password + Enter	unlock
+Esc / Ctrl+U	clear what was typed
+move the mouse in the first 3 seconds	cancel the lock without password
+Vol+ / Vol- / Mute / Bright+ / Bright- / Play	media keys still work
+
+# Bar colors
+gray	typing
+red	wrong password
+gold	Caps Lock is on
+
+# Command
+slock	lock (or Super+Shift+L)
+slock -m "Back soon"	lock with a message
