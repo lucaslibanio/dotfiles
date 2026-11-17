@@ -8,6 +8,7 @@ fontconfig freetype2 harfbuzz cairo imlib2
 
 # X
 xorg-server xorg-xinit xorg-xrandr xorg-xrdb xorg-setxkbmap xdotool xss-lock
+xcompmgr network-manager-applet cbatticon
 
 # áudio, brilho e mídia (controle.sh, dwmblocks, slock)
 libpulse pavucontrol brightnessctl playerctl

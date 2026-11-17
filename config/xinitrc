@@ -1,0 +1,24 @@
+#!/bin/sh
+# Inicialização do X (startx). Link: ~/.xinitrc -> ~/.source/config/xinitrc
+
+[ -f /etc/xprofile ] && . /etc/xprofile
+[ -f ~/.xprofile ] && . ~/.xprofile
+
+# scripts do dotfiles (controle.sh, dmenu_mount, ...) no PATH do dwm
+export PATH="$HOME/Scripts:$HOME/.local/bin:$PATH"
+
+# dbus e systemd do usuário enxergam o X (notificações, portal, etc.)
+systemctl --user import-environment DISPLAY XAUTHORITY DBUS_SESSION_BUS_ADDRESS PATH
+
+# cores: ~/.Xresources e, se existir, as cores do pywal para dwm/dmenu (walupdate.sh)
+[ -f ~/.Xresources ] && xrdb -merge ~/.Xresources
+[ -f ~/.cache/wal/colors-suckless.Xresources ] && xrdb -merge ~/.cache/wal/colors-suckless.Xresources
+
+GTK_THEME=Adwaita:dark nm-applet &
+GTK_THEME=Adwaita:dark cbatticon -i symbolic &
+xcompmgr &                                   # compositor: transparência do st
+dwmblocks &
+xss-lock --transfer-sleep-lock -- slock &    # bloqueia ao suspender ou fechar a tampa
+~/Scripts/mesa_config.sh >/dev/null 2>&1 &   # mesa Wacom (ignora se não estiver ligada)
+
+exec dwm
