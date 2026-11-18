@@ -1,6 +1,8 @@
 # Colors
-tema	toggle pywal colors (or Super+Shift+T)
-tema image.jpg	new colors from an image
+tema	toggle pywal <-> default theme (or Super+Shift+T)
+tema image.jpg	new colors + wallpaper from an image
+tema on	pywal colors + last pywal wallpaper
+tema off	default colors + gray wallpaper
 tema status	which theme is active
 
 # Disks and displays
