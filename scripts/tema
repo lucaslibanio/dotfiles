@@ -13,8 +13,8 @@ cache="$HOME/.cache/wal"
 flag="$HOME/.cache/tema-pywal"          # existe = pywal ligado
 padrao="$HOME/.source/config/Xresources"
 extra="$cache/colors-suckless.Xresources"
-cinza="#808080"                         # fundo do tema padrão (o cinza que o xcompmgr mostra sem papel de parede)
-cinza_img="$HOME/.cache/tema-fundo.png"
+cinza="#202329"                         # fundo da tela no tema padrão (ver config/Xresources)
+cinza_img="$HOME/.cache/tema-fundo-${cinza#\#}.png"   # o nome muda com a cor: trocar a cor gera outra imagem
 
 msg() { echo "$1"; notify-send -h string:x-canonical-private-synchronous:tema "Tema" "$1" 2>/dev/null || true; }
 

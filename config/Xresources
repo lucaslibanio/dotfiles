@@ -1,45 +1,49 @@
-! Tema padrão (sem pywal): cinza + dourado na barra, gruvbox no terminal.
+! Tema padrão (sem pywal): neutro, frio e com um único destaque.
 ! Link: ~/.Xresources -> ~/.source/config/Xresources
 ! O comando "tema" alterna entre este arquivo e as cores do pywal.
+!
+! Base:     fundo #16181c, texto #d4d7dc (contraste 12,3:1), texto secundário #7c828d (4,6:1)
+! Destaque: #8fb4d8, só na borda da janela em foco
+! Fundo da tela: #202329 (definido no script "tema")
 
 ! ---- terminal (st) e qualquer programa que leia *.colorN
-*.foreground:  #ebdbb2
-*.background:  #222222
-*.cursorColor: #ebdbb2
-*.color0:  #282828
-*.color1:  #cc241d
-*.color2:  #98971a
-*.color3:  #d79921
-*.color4:  #458588
-*.color5:  #b16286
-*.color6:  #689d6a
-*.color7:  #a89984
-*.color8:  #928374
-*.color9:  #fb4934
-*.color10: #b8bb26
-*.color11: #fabd2f
-*.color12: #83a598
-*.color13: #d3869b
-*.color14: #8ec07c
-*.color15: #ebdbb2
+*.foreground:  #d4d7dc
+*.background:  #16181c
+*.cursorColor: #d4d7dc
+*.color0:  #262a31
+*.color1:  #d0787a
+*.color2:  #8fb38a
+*.color3:  #d4b878
+*.color4:  #7fa2c9
+*.color5:  #b493c4
+*.color6:  #78b5b3
+*.color7:  #d4d7dc
+*.color8:  #636a77
+*.color9:  #e49193
+*.color10: #a8c9a3
+*.color11: #e3cc94
+*.color12: #9bb8da
+*.color13: #c8acd6
+*.color14: #96cac8
+*.color15: #eceef1
 
 ! ---- dwm
-dwm.normbgcolor:     #222222
-dwm.normfgcolor:     #ffffff
-dwm.normbordercolor: #444444
-dwm.selbgcolor:      #505050
-dwm.selfgcolor:      #ffffff
-dwm.selbordercolor:  #a89984
+dwm.normbgcolor:     #16181c
+dwm.normfgcolor:     #7c828d
+dwm.normbordercolor: #3a3f48
+dwm.selbgcolor:      #262a31
+dwm.selfgcolor:      #d4d7dc
+dwm.selbordercolor:  #8fb4d8
 
 ! ---- dmenu (quando aberto fora do dwm)
-dmenu.background:    #222222
-dmenu.foreground:    #ffffff
-dmenu.selbackground: #505050
-dmenu.selforeground: #ffffff
+dmenu.background:    #16181c
+dmenu.foreground:    #d4d7dc
+dmenu.selbackground: #262a31
+dmenu.selforeground: #d4d7dc
 
 ! ---- slock
-slock.color0:     #222222
-slock.color4:     #505050
-slock.color1:     #cc241d
-slock.color3:     #d79921
-slock.foreground: #ebdbb2
+slock.color0:     #16181c
+slock.color4:     #262a31
+slock.color1:     #d0787a
+slock.color3:     #d4b878
+slock.foreground: #d4d7dc
