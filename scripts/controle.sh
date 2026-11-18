@@ -20,6 +20,14 @@ get_bright() {
 }
 
 case $1 in
+  vol_limit)
+    # sem notificação: só traz o volume de volta para VOL_MAX se estiver acima
+    # (o PipeWire restaura no boot o último volume, mesmo acima de 100%)
+    v=$(get_vol)
+    [ -n "$v" ] && (( v > VOL_MAX )) && pactl set-sink-volume @DEFAULT_SINK@ "${VOL_MAX}%"
+    exit 0
+    ;;
+
   vol_up)
     pactl set-sink-mute @DEFAULT_SINK@ 0
     new=$(( $(get_vol) + VOL_STEP ))
@@ -55,7 +63,7 @@ case $1 in
     ;;
 
   *)
-    echo "Uso: $0 {vol_up|vol_down|vol_mute|bright_up|bright_down}"
+    echo "Uso: $0 {vol_up|vol_down|vol_mute|vol_limit|bright_up|bright_down}"
     exit 1
     ;;
 esac
