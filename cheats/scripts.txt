@@ -18,3 +18,20 @@ camera_cell	phone as a webcam
 download_music.sh URL album	download an album (yt-dlp)
 pomodoro	pomodoro timer
 cheats --check	check that the cheat sheets match config.h
+
+# Behind the shortcuts (can also be run by hand)
+dmenu_power	power menu (Super+Shift+Q)
+dmenu_emoji	emoji and symbol picker (Super+Shift+E)
+dmenu_run	program launcher with history (Super+P)
+cheats --menu	this cheat sheet in dmenu (Super+F1)
+screenshot_satty.sh / screenshot_satty.sh -e	screenshot / with editor (Super+Shift+A / S)
+controle.sh vol_up / vol_down / vol_mute	volume with notification (media keys)
+controle.sh bright_up / bright_down	brightness with notification (media keys)
+st-urlhandler open / copy	links on screen in st (Alt+L / Alt+Y)
+
+# Older scripts
+duplicate_terminal.sh	new st in the current directory (st has Ctrl+Shift+Enter now)
+arrumar_monitor.sh	HDMI left of the laptop (dmenu_display does this and more)
+screenshot.sh / screenshot_flameshot.sh	older screenshot variants (maim / flameshot)
+mesa_config.sh	Wacom tablet mapping (runs at login)
+walupdate.sh	old name of "tema"
