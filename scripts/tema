@@ -30,6 +30,36 @@ fundo() {
     fi
 }
 
+# dunst: não lê o Xresources. No pywal, as cores vão num arquivo extra em
+# dunstrc.d (que o dunst lê por cima do dunstrc); no tema padrão, o arquivo
+# é apagado e valem as cores do próprio dunstrc.
+dunst_tema="$HOME/.config/dunst/dunstrc.d/90-tema.conf"
+dunst_cores() {
+    if [ "$1" = pywal ]; then
+        mkdir -p "$(dirname "$dunst_tema")"
+        cat > "$dunst_tema" <<DUNST
+[global]
+    frame_color = "$color8"
+[urgency_low]
+    background = "$background"
+    foreground = "$color8"
+    highlight = "$color4"
+[urgency_normal]
+    background = "$background"
+    foreground = "$foreground"
+    highlight = "$color4"
+[urgency_critical]
+    background = "$background"
+    foreground = "$foreground"
+    frame_color = "$color1"
+    highlight = "$color1"
+DUNST
+    else
+        rm -f "$dunst_tema"
+    fi
+    dunstctl reload 2>/dev/null || pkill -x dunst 2>/dev/null || true
+}
+
 recarregar() {
     xdotool key --clearmodifiers super+F5 2>/dev/null || true   # dwm (solta o Shift do atalho)
     pkill -USR1 -x st 2>/dev/null || true      # st (todos os terminais abertos)
@@ -72,6 +102,7 @@ ligar() {
     xrdb -merge "$cache/colors.Xresources"
     xrdb -merge "$extra"
     touch "$flag"
+    dunst_cores pywal
     fundo "${wallpaper:-}"
     recarregar
     msg "Tema: pywal ($(basename "${wallpaper:-?}"))"
@@ -82,6 +113,7 @@ desligar() {
     # *color0) e com -merge as cópias dele continuavam valendo
     xrdb -load "$padrao"
     rm -f "$flag"
+    dunst_cores padrao
     fundo cinza
     recarregar
     msg "Tema: padrão"

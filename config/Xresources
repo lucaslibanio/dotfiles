@@ -2,7 +2,7 @@
 ! Link: ~/.Xresources -> ~/.source/config/Xresources
 ! O comando "tema" alterna entre este arquivo e as cores do pywal.
 !
-! Base:     fundo #16181c, texto #d4d7dc (contraste 12,3:1), texto secundário #7c828d (4,6:1)
+! Base:     fundo #16181c, texto #d4d7dc (contraste 12,3:1), texto da barra #a9afb8 (8:1)
 ! Destaque: #8fb4d8, só na borda da janela em foco
 ! Fundo da tela: #202329 (definido no script "tema")
 
@@ -29,7 +29,7 @@
 
 ! ---- dwm
 dwm.normbgcolor:     #16181c
-dwm.normfgcolor:     #7c828d
+dwm.normfgcolor:     #a9afb8
 dwm.normbordercolor: #3a3f48
 dwm.selbgcolor:      #262a31
 dwm.selfgcolor:      #d4d7dc
