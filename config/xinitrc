@@ -18,6 +18,9 @@ if [ -f ~/.cache/tema-pywal ] && [ -f ~/.cache/wal/colors-suckless.Xresources ];
     xrdb -merge ~/.cache/wal/colors-suckless.Xresources
 fi
 
+# papel de parede: o último definido pelo feh (o pywal usa o feh e grava ~/.fehbg)
+[ -x ~/.fehbg ] && ~/.fehbg &
+
 GTK_THEME=Adwaita:dark nm-applet &
 GTK_THEME=Adwaita:dark cbatticon -i symbolic &
 xcompmgr &                                   # compositor: transparência do st

@@ -23,15 +23,18 @@ recarregar() {
 
 # O pywal só gera *.colorN; dwm, dmenu e slock usam nomes próprios.
 gerar_extra() {
-    # define $background, $foreground, $color0..$color15
+    # define $background, $foreground, $color0..$color15. O colors.sh do pywal16
+    # usa variáveis que podem não existir (ex.: $FZF_DEFAULT_OPTS), então lê sem o "set -u"
+    set +u
     . "$cache/colors.sh"
+    set -u
     cat > "$extra" <<XRES
 dwm.normbgcolor:     $background
 dwm.normfgcolor:     $foreground
 dwm.normbordercolor: $color8
 dwm.selbgcolor:      $color4
 dwm.selfgcolor:      $foreground
-dwm.selbordercolor:  $color3
+dwm.selbordercolor:  $foreground
 dmenu.background:    $background
 dmenu.foreground:    $foreground
 dmenu.selbackground: $color4
@@ -73,7 +76,15 @@ case "${1:-toggle}" in
     *)
         [ -f "$1" ] || { echo "Imagem não encontrada: $1 (veja: tema --help)"; exit 1; }
         command -v wal >/dev/null || { echo "pywal não instalado: sudo pacman -S python-pywal"; exit 1; }
-        wal -q -i "$1"
+        img=$(readlink -f "$1")
+        # -n: o pywal só gera as cores; o papel de parede fica com o feh, que
+        # também grava ~/.fehbg (o .xinitrc usa para restaurar no login)
+        wal -q -n -i "$img"
+        if command -v feh >/dev/null; then
+            feh --bg-fill "$img"
+        else
+            msg "Sem feh: as cores mudam, mas o papel de parede não. Instale: sudo pacman -S feh"
+        fi
         ligar
         ;;
 esac

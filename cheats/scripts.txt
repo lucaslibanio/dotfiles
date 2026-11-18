@@ -10,7 +10,7 @@ cripto_pendrive.sh open /dev/sdb1	open encrypted USB drive
 cripto_pendrive.sh close	close encrypted USB drive
 
 # Other
-layout_change.sh	keyboard ABNT2 <-> US international
+layout_change.sh	keyboard ABNT2 <-> US international (Super+Alt+K)
 conserv_mode.sh	battery conservation mode
 camera_cell	phone as a webcam
 download_music.sh URL album	download an album (yt-dlp)

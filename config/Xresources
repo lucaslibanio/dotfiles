@@ -29,7 +29,7 @@ dwm.normfgcolor:     #ffffff
 dwm.normbordercolor: #444444
 dwm.selbgcolor:      #505050
 dwm.selfgcolor:      #ffffff
-dwm.selbordercolor:  #d79921
+dwm.selbordercolor:  #a89984
 
 ! ---- dmenu (quando aberto fora do dwm)
 dmenu.background:    #222222

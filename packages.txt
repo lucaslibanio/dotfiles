@@ -9,6 +9,7 @@ fontconfig freetype2 harfbuzz cairo imlib2
 # X
 xorg-server xorg-xinit xorg-xrandr xorg-xrdb xorg-setxkbmap xdotool xss-lock
 xcompmgr network-manager-applet cbatticon
+feh imagemagick
 
 # áudio, brilho e mídia (controle.sh, dwmblocks, slock)
 libpulse pavucontrol brightnessctl playerctl
@@ -23,4 +24,4 @@ xclip maim satty udisks2 cryptsetup
 zathura zathura-pdf-mupdf
 
 # fontes
-ttf-ubuntu-font-family noto-fonts-emoji ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono
+ttf-firacode-nerd ttf-ubuntu-font-family noto-fonts-emoji ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-mono

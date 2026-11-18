@@ -15,6 +15,7 @@ Super+Shift+E	emoji and symbol picker (copies)
 Super+Shift+D	displays: extend, mirror, single
 Super+Shift+M	mount / unmount USB drives
 Super+Shift+T	toggle pywal colors (tema)
+Super+Alt+K	keyboard layout: ABNT2 <-> US international
 Super+Shift+Q	power menu: lock, suspend, quit, reboot, shut down
 
 # Windows
