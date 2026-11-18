@@ -13,11 +13,25 @@ cache="$HOME/.cache/wal"
 flag="$HOME/.cache/tema-pywal"          # existe = pywal ligado
 padrao="$HOME/.source/config/Xresources"
 extra="$cache/colors-suckless.Xresources"
+cinza="#808080"                         # fundo do tema padrão (o cinza que o xcompmgr mostra sem papel de parede)
+cinza_img="$HOME/.cache/tema-fundo.png"
 
 msg() { echo "$1"; notify-send -h string:x-canonical-private-synchronous:tema "Tema" "$1" 2>/dev/null || true; }
 
+# papel de parede: $1 = imagem, ou "cinza" para a cor sólida do tema padrão
+fundo() {
+    command -v feh >/dev/null || return 0
+    if [ "$1" = cinza ]; then
+        [ -f "$cinza_img" ] || magick -size 16x16 "xc:$cinza" "$cinza_img" 2>/dev/null ||
+            convert -size 16x16 "xc:$cinza" "$cinza_img" 2>/dev/null || return 0
+        feh --bg-tile "$cinza_img"
+    elif [ -f "$1" ]; then
+        feh --bg-fill "$1"
+    fi
+}
+
 recarregar() {
-    xdotool key super+F5 2>/dev/null || true   # dwm
+    xdotool key --clearmodifiers super+F5 2>/dev/null || true   # dwm (solta o Shift do atalho)
     pkill -USR1 -x st 2>/dev/null || true      # st (todos os terminais abertos)
 }
 
@@ -53,16 +67,22 @@ ligar() {
         exit 1
     fi
     gerar_extra
+    # começa do tema padrão e põe o pywal por cima
+    xrdb -load "$padrao"
     xrdb -merge "$cache/colors.Xresources"
     xrdb -merge "$extra"
     touch "$flag"
+    fundo "${wallpaper:-}"
     recarregar
     msg "Tema: pywal ($(basename "${wallpaper:-?}"))"
 }
 
 desligar() {
-    xrdb -merge "$padrao"
+    # -load substitui tudo: o pywal grava cada cor em dois formatos (*.color0 e
+    # *color0) e com -merge as cópias dele continuavam valendo
+    xrdb -load "$padrao"
     rm -f "$flag"
+    fundo cinza
     recarregar
     msg "Tema: padrão"
 }
@@ -80,11 +100,8 @@ case "${1:-toggle}" in
         # -n: o pywal só gera as cores; o papel de parede fica com o feh, que
         # também grava ~/.fehbg (o .xinitrc usa para restaurar no login)
         wal -q -n -i "$img"
-        if command -v feh >/dev/null; then
-            feh --bg-fill "$img"
-        else
+        command -v feh >/dev/null ||
             msg "Sem feh: as cores mudam, mas o papel de parede não. Instale: sudo pacman -S feh"
-        fi
         ligar
         ;;
 esac
