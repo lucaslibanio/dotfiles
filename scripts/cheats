@@ -132,7 +132,7 @@ keys_from_config() {
             return (length(k) == 1) ? toupper(k) : k
         }
         BEGIN {
-            split("Return=Enter grave=` space=Space comma=, period=. Page_Up=PgUp Page_Down=PgDn " \
+            split("Return=Enter grave=` dead_grave=` apostrophe=\047 space=Space comma=, period=. Page_Up=PgUp Page_Down=PgDn " \
                   "Num_Lock=NumLock AudioRaiseVolume=Vol+ AudioLowerVolume=Vol- AudioMute=Mute " \
                   "AudioMicMute=MicMute MonBrightnessUp=Bright+ MonBrightnessDown=Bright- " \
                   "AudioPlay=Play AudioNext=Next AudioPrev=Prev", pairs, " ")

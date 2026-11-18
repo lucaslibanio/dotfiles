@@ -12,5 +12,6 @@ else
     msg="Teclado: ABNT2"
 fi
 
+pkill -RTMIN+6 dwmblocks 2>/dev/null   # atualiza o bloco "Kbd:" da barra
 echo "$msg"
 notify-send -h string:x-canonical-private-synchronous:teclado "$msg" 2>/dev/null

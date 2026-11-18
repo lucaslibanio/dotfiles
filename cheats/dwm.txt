@@ -6,7 +6,7 @@ Super+P	run a program (dmenu, with history)
 Super+Shift+Enter	terminal (st)
 Super+W	web browser (LibreWolf)
 Super+E	file manager
-Super+`	scratchpad: floating terminal that shows/hides
+Super+' / Super+`	scratchpad: floating terminal that shows/hides (key left of 1)
 Super+F1	this cheat sheet (all programs)
 Super+Shift+L	lock the screen (slock)
 Super+Shift+A	screenshot of an area (copies and asks for a name)
@@ -74,6 +74,7 @@ Super+right drag	resize window
 Super+middle click	toggle floating
 scroll on the layout symbol	change layout
 click or scroll on a status block	block action (volume, battery, date...)
+click on Kbd: in the bar	switch keyboard layout
 
 # System
 Super+F5	reload Xresources colors
