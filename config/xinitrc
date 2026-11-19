@@ -10,6 +10,11 @@ export PATH="$HOME/Scripts:$HOME/.local/bin:$PATH"
 # dbus e systemd do usuário enxergam o X (notificações, portal, etc.)
 systemctl --user import-environment DISPLAY XAUTHORITY DBUS_SESSION_BUS_ADDRESS PATH
 
+# sem bipe do X (slock ao errar a senha, terminais) e sem o canal Beep da placa de som
+xset b off
+amixer -q set Beep 0% mute 2>/dev/null
+amixer -q set 'PC Beep' 0% mute 2>/dev/null
+
 # cores: tema padrão (~/.Xresources) e, se o pywal estiver ligado (comando "tema"),
 # as cores dele por cima
 [ -f ~/.Xresources ] && xrdb -merge ~/.Xresources

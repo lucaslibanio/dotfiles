@@ -7,7 +7,7 @@ libx11 libxft libxinerama libxrandr libxext libxrender
 fontconfig freetype2 harfbuzz cairo imlib2
 
 # X
-xorg-server xorg-xinit xorg-xrandr xorg-xrdb xorg-setxkbmap xdotool xss-lock
+xorg-server xorg-xinit xorg-xrandr xorg-xrdb xorg-setxkbmap xorg-xset xdotool xss-lock alsa-utils
 xcompmgr network-manager-applet cbatticon
 feh imagemagick
 

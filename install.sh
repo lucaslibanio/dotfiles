@@ -121,6 +121,13 @@ link "$DOT/config/zathura/zathurarc" "$HOME/.config/zathura/zathurarc"
 [ -f "$DOT/config/xprofile" ]    && link "$DOT/config/xprofile"    "$HOME/.xprofile"
 mkdir -p "$HOME/Pictures/Screenshots"
 
+# sem bipe do alto-falante interno (precisa de root; não é link, é cópia)
+if (( compilar )) && ! cmp -s "$DOT/config/modprobe/nobeep.conf" /etc/modprobe.d/nobeep.conf; then
+    passo "Desligando o bipe do sistema (/etc/modprobe.d/nobeep.conf)"
+    sudo install -Dm644 "$DOT/config/modprobe/nobeep.conf" /etc/modprobe.d/nobeep.conf
+    sudo rmmod pcspkr snd_pcsp 2>/dev/null || true
+fi
+
 # ---------------------------------------------------------------- avisos
 case ":$PATH:" in
     *":$HOME/Scripts:"*) ;;
