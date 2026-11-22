@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tour do tmux</title>
+<style>
+  :root{
+    --bg:#111214; --panel:#16181c; --sel:#262a31; --line:#3a3f48; --fg:#d4d7dc; --bar:#a9afb8;
+    --mut:#7c828d; --acc:#8fb4d8; --yel:#d4b878; --grn:#8fb38a; --red:#d0787a; --cya:#78b5b3;
+    --mono:"FiraCode Nerd Font Mono","Fira Code","JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+  main{max-width:1000px;margin:0 auto;padding:28px 20px 70px}
+  h1{font-family:var(--mono);font-size:28px;margin:0 0 4px;font-weight:600}
+  h1 span{color:var(--acc)}
+  .lead{color:var(--mut);margin:0 0 22px}
+  .layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:22px;align-items:start}
+  @media (max-width:820px){.layout{grid-template-columns:1fr}}
+  /* tela simulada */
+  .screen{background:var(--panel);border:1px solid #000;border-radius:8px;overflow:hidden;font-family:var(--mono);font-size:13px}
+  .term{height:330px;display:grid;gap:1px;background:var(--line);padding:0}
+  .pane{background:var(--panel);padding:8px 10px;overflow:hidden;color:var(--fg);position:relative;transition:outline-color .2s}
+  .pane.on{outline:1px solid var(--acc);outline-offset:-1px;z-index:1}
+  .pane .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:56px;color:var(--acc);background:rgba(22,24,28,.85)}
+  .pane .ps{color:var(--grn)} .pane .dir{color:#7fa2c9} .pane .dim{color:var(--mut)} .pane .y{color:var(--yel)}
+  .pane .hl{background:var(--sel);color:var(--fg)}
+  .status{display:flex;align-items:center;height:24px;background:var(--panel);color:var(--bar);border-top:1px solid #000;white-space:nowrap;overflow:hidden}
+  .status .sess{color:var(--acc);padding:0 8px}
+  .status .win{padding:0 8px}
+  .status .win.cur{background:var(--sel);color:var(--fg)}
+  .status .sp{flex:1}
+  .status .pfx{color:var(--yel);padding-right:8px}
+  .status .clk{color:var(--mut);padding-right:8px}
+  .menu{position:absolute;right:12px;top:12px;background:var(--sel);border:1px solid var(--line);padding:6px 0;min-width:170px;z-index:3}
+  .menu div{padding:2px 12px}.menu .a{background:#3a3f48}
+  .dm{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:78%;background:var(--panel);border:2px solid var(--acc);z-index:4}
+  .dm div{padding:2px 10px}.dm .p{background:var(--sel);display:inline-block;padding:2px 10px;margin:-2px 8px -2px -10px}
+  .dm .s{background:var(--sel)}
+  /* explicação */
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px 20px}
+  .stepno{font:13px var(--mono);color:var(--mut)}
+  .card h2{font-size:19px;margin:4px 0 10px;font-weight:600}
+  .card p{margin:8px 0;color:#c4c8ce}
+  .keys{margin:12px 0;display:flex;flex-direction:column;gap:7px}
+  .k{display:flex;gap:10px;align-items:baseline}
+  .k .combo{flex:0 0 auto;font-family:var(--mono);white-space:nowrap}
+  .k .what{color:#c4c8ce}
+  kbd{font-family:var(--mono);font-size:13px;background:#24272d;border:1px solid #444a54;border-bottom-width:2px;border-radius:4px;padding:1px 6px;color:#fff}
+  .tip{margin-top:12px;padding:10px 12px;border-left:3px solid var(--acc);background:#1b1e23;font-size:15px;color:#c4c8ce}
+  .tip b{color:var(--acc)}
+  .try{margin-top:12px;padding:10px 12px;border-left:3px solid var(--yel);background:#1f1d18;font-size:15px;color:#c4c8ce}
+  .try b{color:var(--yel)}
+  code{font-family:var(--mono);background:#24272d;padding:1px 5px;border-radius:3px;font-size:.92em}
+  .nav{display:flex;gap:10px;align-items:center;margin-top:16px}
+  .nav button{font:14px var(--mono);background:#1b1e23;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:7px 14px;cursor:pointer}
+  .nav button:hover{border-color:var(--acc);color:var(--acc)}
+  .nav button:disabled{opacity:.35;cursor:default;border-color:var(--line);color:var(--fg)}
+  .dots{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto}
+  .dots i{width:9px;height:9px;border-radius:50%;background:#2e3238;cursor:pointer}
+  .dots i.on{background:var(--acc)}
+  .hint{color:var(--mut);font-size:13px;margin-top:8px}
+  h3{font-family:var(--mono);font-size:16px;color:var(--acc);margin:40px 0 8px;font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  td{padding:6px 8px;border-bottom:1px solid #22252b;vertical-align:top}
+  td:first-child{white-space:nowrap;font-family:var(--mono);width:34%}
+  footer{margin-top:36px;color:var(--mut);font-size:14px}
+</style>
+</head>
+<body>
+<main>
+<h1>Tour do <span>tmux</span></h1>
+<p class="lead">Do zero até o uso do dia a dia, com a sua config. À esquerda, uma simulação da tela; à direita, o que apertar. Use os botões ou as setas <kbd>←</kbd> <kbd>→</kbd> do teclado.</p>
+
+<div class="layout">
+  <div>
+    <div class="screen">
+      <div class="term" id="term"></div>
+      <div class="status" id="status"></div>
+    </div>
+    <div class="hint" id="legend"></div>
+  </div>
+  <div>
+    <div class="card" id="card"></div>
+    <div class="nav">
+      <button id="prev">← anterior</button><button id="next">próximo →</button>
+      <div class="dots" id="dots"></div>
+    </div>
+  </div>
+</div>
+
+<h3>Fluxo do dia a dia</h3>
+<table>
+  <tr><td>Super+O → projeto</td><td>abre (ou volta para) a sessão daquele projeto, num terminal novo</td></tr>
+  <tr><td>prefixo |  /  prefixo -</td><td>monta a área: editor de um lado, terminal do outro</td></tr>
+  <tr><td>prefixo h j k l</td><td>pula entre os painéis sem tirar a mão do teclado</td></tr>
+  <tr><td>prefixo z</td><td>foca um painel em tela cheia e volta</td></tr>
+  <tr><td>prefixo f</td><td>troca para outro projeto sem sair do tmux</td></tr>
+  <tr><td>prefixo d</td><td>sai; tudo continua rodando para quando você voltar</td></tr>
+</table>
+
+<footer>Cola completa: <code>cheats tmux</code> ou <kbd>Super</kbd>+<kbd>F1</kbd>. Config: <code>~/.source/config/tmux/tmux.conf</code>. Também salvo em <code>~/.source/TMUX.html</code>.</footer>
+</main>
+
+<script>
+const P = '<kbd>Ctrl</kbd>+<kbd>a</kbd>';
+const pane = (html, on, area) => ({html, on, area});
+const sh = (dir, cmd='') => `<span class="ps">lucas@arch</span> <span class="dir">${dir}</span> $ ${cmd}`;
+
+const steps = [
+{
+  title:'O que é o tmux',
+  text:`<p>O tmux organiza terminais em três níveis, todos dentro de uma única janela do st:</p>
+  <p><b>Sessão</b>: um "espaço de trabalho", normalmente um por projeto. <b>Janela</b>: abas, que aparecem na barra de baixo. <b>Painel</b>: divisões dentro de uma janela.</p>
+  <p>A grande vantagem é que a sessão <b>continua viva</b> mesmo se você fechar o terminal. Você volta depois e está tudo como deixou: comandos rodando, histórico, painéis.</p>`,
+  keys:[['tmux','abre o tmux com uma sessão nova']],
+  grid:'"a"', panes:[pane(sh('~')+'tmux<br><span class="dim">[a barra de baixo é do tmux]</span>',1,'a')],
+  wins:[['1','fish',1]], sess:'0'
+},
+{
+  title:'O prefixo: Ctrl+a',
+  text:`<p>Todo atalho do tmux começa com o <b>prefixo</b>: aperte <kbd>Ctrl</kbd>+<kbd>a</kbd>, solte, e depois aperte a tecla do comando. Na sua config, o prefixo é <kbd>Ctrl</kbd>+<kbd>a</kbd> (o padrão do tmux é <kbd>Ctrl</kbd>+<kbd>b</kbd>, mais longe da mão).</p>
+  <p>Enquanto o prefixo está "armado", a barra mostra <span style="color:var(--yel)">PREFIXO</span> no canto direito.</p>`,
+  keys:[[P,'arma o prefixo'],[P+' <kbd>a</kbd>','manda um Ctrl+a de verdade para o shell (ir ao começo da linha)']],
+  tip:'Nos passos seguintes, <b>prefixo</b> quer dizer Ctrl+a e soltar.',
+  grid:'"a"', panes:[pane(sh('~/projeto'),1,'a')], wins:[['1','fish',1]], sess:'projeto', pfx:1
+},
+{
+  title:'Dividir em painéis',
+  text:`<p>Os símbolos lembram a divisão: <kbd>|</kbd> põe lado a lado, <kbd>-</kbd> põe um em cima do outro. O painel novo já abre <b>na mesma pasta</b> em que você estava.</p>`,
+  keys:[['prefixo <kbd>|</kbd>','divide lado a lado'],['prefixo <kbd>-</kbd>','divide em cima e embaixo'],['prefixo <kbd>x</kbd>','fecha o painel (pergunta y/n)']],
+  try:'Faça <b>prefixo |</b> e depois, no painel da direita, <b>prefixo -</b>. Você fica com a montagem da simulação.',
+  grid:'"a b" "a c"', panes:[pane(sh('~/projeto','nvim main.c')+'<br><span class="dim">-- editor --</span>',0,'a'),pane(sh('~/projeto','make'),0,'b'),pane(sh('~/projeto','git status')+'<br><span style="color:var(--red)">&nbsp;M main.c</span>',1,'c')],
+  wins:[['1','nvim',1]], sess:'projeto'
+},
+{
+  title:'Andar entre painéis: h j k l',
+  text:`<p>As mesmas direções do nvim. Com letra maiúscula, você <b>redimensiona</b>; e para redimensionar não precisa repetir o prefixo: aperte uma vez e depois <kbd>H</kbd> <kbd>H</kbd> <kbd>H</kbd>.</p>
+  <p>Com o mouse também funciona: clique num painel para focar, arraste a borda para redimensionar.</p>`,
+  keys:[['prefixo <kbd>h</kbd> <kbd>j</kbd> <kbd>k</kbd> <kbd>l</kbd>','vai para o painel à esquerda / abaixo / acima / à direita'],['prefixo <kbd>H</kbd> <kbd>J</kbd> <kbd>K</kbd> <kbd>L</kbd>','aumenta/diminui o painel naquela direção'],['prefixo <kbd>q</kbd>','mostra o número de cada painel; digite um para pular']],
+  grid:'"a b" "a c"', panes:[pane(sh('~/projeto','nvim main.c'),1,'a'),pane(sh('~/projeto','make'),0,'b'),pane(sh('~/projeto','git status'),0,'c')],
+  nums:1, wins:[['1','nvim',1]], sess:'projeto'
+},
+{
+  title:'Zoom: um painel em tela cheia',
+  text:`<p>Precisa de espaço para ler um log ou editar? O zoom estica o painel atual por cima dos outros. Apertando de novo, volta a divisão como estava.</p>`,
+  keys:[['prefixo <kbd>z</kbd>','zoom liga/desliga'],['prefixo <kbd>Espaço</kbd>','alterna entre arrumações prontas dos painéis']],
+  grid:'"a"', panes:[pane(sh('~/projeto','make')+'<br>cc -O2 -o app main.c<br><span class="dim">… 200 linhas de saída …</span><br><span style="color:var(--grn)">build ok</span>',1,'a')],
+  wins:[['1','make Z',1]], sess:'projeto', legend:'O "Z" ao lado do nome da janela indica que está com zoom.'
+},
+{
+  title:'Janelas: as abas da barra',
+  text:`<p>Cada janela tem os seus próprios painéis. A barra mostra todas; a destacada é a atual. A numeração começa em 1, igual ao teclado, e se você fechar a 2 a 3 vira 2.</p>`,
+  keys:[['prefixo <kbd>c</kbd>','janela nova, na pasta atual'],['prefixo <kbd>1</kbd>…<kbd>9</kbd>','vai para a janela'],['prefixo <kbd>Ctrl</kbd>+<kbd>a</kbd>','alterna com a última janela usada'],['prefixo <kbd>,</kbd>','renomeia a janela'],['prefixo <kbd>&amp;</kbd>','fecha a janela (pergunta y/n)']],
+  grid:'"a"', panes:[pane(sh('~/projeto','npm run dev')+'<br><span style="color:var(--grn)">ready on :3000</span>',1,'a')],
+  wins:[['1','editor',0],['2','servidor',1],['3','logs',0]], sess:'projeto'
+},
+{
+  title:'Sessões e sair sem fechar',
+  text:`<p>Com <b>detach</b> você sai do tmux, mas a sessão fica rodando no fundo (até um servidor ou um download continuam). Para voltar, <code>tmux attach</code>.</p>
+  <p>A árvore mostra todas as sessões e janelas de uma vez; escolha com <kbd>Enter</kbd>.</p>`,
+  keys:[['prefixo <kbd>d</kbd>','sai (detach); tudo continua rodando'],['<code>tmux ls</code>','lista as sessões'],['<code>tmux attach -t nome</code>','volta para uma sessão'],['prefixo <kbd>s</kbd>','árvore de sessões e janelas'],['prefixo <kbd>Backspace</kbd>','volta para a sessão anterior'],['prefixo <kbd>$</kbd>','renomeia a sessão']],
+  grid:'"a"', panes:[pane('<span class="dim">(1) sessões</span><br><span class="hl">&gt; projeto: 3 janelas</span><br>&nbsp;&nbsp;tese: 2 janelas<br>&nbsp;&nbsp;.source: 1 janela<br><br><span class="dim">Enter escolhe · q sai</span>',1,'a')],
+  wins:[['1','editor',0],['2','servidor',1],['3','logs',0]], sess:'projeto'
+},
+{
+  title:'Seletor de projetos',
+  text:`<p>O jeito mais prático de usar: um projeto = uma sessão. O seletor lista as pastas de <code>~/Documents</code>, <code>~/Dropbox</code>, <code>~/.source</code> e da sua pasta pessoal no dmenu. Escolheu, ele cria a sessão naquela pasta; se ela já existe, só volta para ela.</p>`,
+  keys:[['<kbd>Super</kbd>+<kbd>O</kbd>','de qualquer lugar: abre um terminal já na sessão do projeto'],['prefixo <kbd>f</kbd>','dentro do tmux: troca de projeto'],['<code>tmux-sessionizer</code>','no terminal']],
+  tip:'As pastas listadas ficam na linha <b>BASES=</b> no começo de <code>~/.source/scripts/tmux-sessionizer</code>.',
+  grid:'"a"', panes:[pane(sh('~/projeto'),1,'a')], dm:1, wins:[['1','fish',1]], sess:'projeto'
+},
+{
+  title:'Copiar como no vim',
+  text:`<p>O modo cópia deixa você rolar o histórico e selecionar texto com o teclado. O que você copia vai direto para a área de transferência do sistema: cole com <kbd>Ctrl</kbd>+<kbd>V</kbd> em qualquer programa.</p>`,
+  keys:[['prefixo <kbd>[</kbd>','entra no modo cópia (a roda do mouse também)'],['<kbd>v</kbd> / <kbd>Ctrl</kbd>+<kbd>v</kbd>','começa a seleção / seleção em bloco'],['<kbd>y</kbd>','copia e sai'],['<kbd>/</kbd> <kbd>?</kbd> · <kbd>n</kbd> <kbd>N</kbd>','busca para baixo/cima · próximo/anterior'],['<kbd>q</kbd>','sai (<kbd>Esc</kbd> só limpa a seleção)']],
+  tip:'Com o mouse é ainda mais rápido: <b>arrastar</b> ou dar <b>duplo clique</b> numa palavra já copia.',
+  grid:'"a"', panes:[pane(sh('~/projeto','git log --oneline')+'<br><span class="y">a8bf080</span> tmux: config<br><span class="hl"><span class="y">35ffbd9</span> Super+O: projeto</span><br><span class="y">6120bc9</span> Sem bipe<br><br><span class="dim">[modo cópia: 12/50000]</span>',1,'a')],
+  wins:[['1','fish',1]], sess:'projeto', legend:'A linha destacada é a seleção.'
+},
+{
+  title:'Mouse e menu',
+  text:`<p>O mouse está ligado: clicar foca um painel, arrastar a borda redimensiona, a roda rola o histórico. O <b>botão direito</b> abre um menu com as ações do painel.</p>`,
+  keys:[['clique','foca o painel'],['arrastar a borda','redimensiona'],['roda do mouse','rola o histórico'],['botão direito','menu: dividir, zoom, fechar…']],
+  grid:'"a b"', panes:[pane(sh('~/projeto','nvim'),0,'a'),pane(sh('~/projeto'),1,'b')], menu:1,
+  wins:[['1','fish',1]], sess:'projeto'
+},
+{
+  title:'Pronto. Para lembrar de tudo:',
+  text:`<p>A cola completa está no <kbd>Super</kbd>+<kbd>F1</kbd> (digite "tmux") ou com <code>cheats tmux</code> no terminal. Dentro do tmux, <b>prefixo ?</b> lista todos os atalhos.</p>
+  <p>Mudou algo na config? <b>prefixo r</b> recarrega sem fechar nada.</p>`,
+  keys:[['prefixo <kbd>?</kbd>','todos os atalhos'],['prefixo <kbd>r</kbd>','recarrega a config'],['prefixo <kbd>:</kbd>','linha de comando do tmux']],
+  try:'Exercício: <b>Super+O</b> num projeto, <b>prefixo |</b>, abra o nvim de um lado, rode algo do outro, <b>prefixo d</b> para sair, e <b>Super+O</b> de novo para ver tudo exatamente como deixou.',
+  grid:'"a b"', panes:[pane(sh('~/projeto','nvim main.c'),0,'a'),pane(sh('~/projeto','make && ./app'),1,'b')],
+  wins:[['1','projeto',1]], sess:'projeto'
+}
+];
+
+let i = 0;
+const $ = id => document.getElementById(id);
+function render() {
+  const s = steps[i];
+  const term = $('term');
+  term.style.gridTemplateAreas = s.grid;
+  const cols = s.grid.split('"').filter(x => x.trim())[0].trim().split(/\s+/).length;
+  const rows = s.grid.split('"').filter(x => x.trim()).length;
+  term.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  term.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+  term.innerHTML = s.panes.map((p, n) =>
+    `<div class="pane${p.on ? ' on' : ''}" style="grid-area:${p.area}">${p.html}${s.nums ? `<div class="num">${n + 1}</div>` : ''}${s.menu && p.on ? '<div class="menu"><div>Horizontal Split</div><div>Vertical Split</div><div class="a">Zoom</div><div>Kill</div></div>' : ''}${s.dm && p.on ? '<div class="dm"><div><span class="p">Projeto:</span>tes</div><div class="s">~/Documents/tese</div><div>~/Documents/teste_sql</div><div>~/.source</div></div>' : ''}</div>`).join('');
+  $('status').innerHTML = `<span class="sess">${s.sess}</span>` +
+    s.wins.map(w => `<span class="win${w[2] ? ' cur' : ''}">${w[0]} ${w[1]}</span>`).join('') +
+    `<span class="sp"></span>${s.pfx ? '<span class="pfx">PREFIXO</span>' : ''}<span class="clk">21:30</span>`;
+  $('legend').textContent = s.legend || '';
+  $('card').innerHTML = `<div class="stepno">passo ${i + 1} de ${steps.length}</div><h2>${s.title}</h2>${s.text}` +
+    `<div class="keys">${s.keys.map(k => `<div class="k"><span class="combo">${k[0]}</span><span class="what">${k[1]}</span></div>`).join('')}</div>` +
+    (s.tip ? `<div class="tip">${s.tip}</div>` : '') + (s.try ? `<div class="try">${s.try}</div>` : '');
+  $('prev').disabled = i === 0; $('next').disabled = i === steps.length - 1;
+  $('dots').innerHTML = steps.map((_, n) => `<i class="${n === i ? 'on' : ''}" data-n="${n}" title="passo ${n + 1}"></i>`).join('');
+  $('dots').querySelectorAll('i').forEach(d => d.addEventListener('click', () => { i = +d.dataset.n; render(); }));
+}
+$('prev').addEventListener('click', () => { if (i > 0) { i--; render(); } });
+$('next').addEventListener('click', () => { if (i < steps.length - 1) { i++; render(); } });
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' && i < steps.length - 1) { i++; render(); }
+  if (e.key === 'ArrowLeft' && i > 0) { i--; render(); }
+});
+render();
+</script>
+</body>
+</html>
