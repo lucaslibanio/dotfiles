@@ -2,7 +2,7 @@
 # "Launcher" do clipmenu (CM_LAUNCHER): mostra cada item cortado em MAX
 # caracteres e devolve ao clipmenu a linha original do item escolhido.
 # Os argumentos (-c -l 15 ...) vão direto para o dmenu.
-MAX=20
+MAX=40
 
 mapfile -t linhas    # o clipmenu manda uma linha por item, do mais novo ao mais velho
 [ ${#linhas[@]} -gt 0 ] || exit 1
