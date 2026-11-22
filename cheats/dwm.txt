@@ -6,6 +6,7 @@ Super+P	run a program (dmenu, with history)
 Super+Shift+Enter	terminal (st)
 Super+W	web browser (LibreWolf)
 Super+O	open a project in tmux (tmux-sessionizer)
+Super+V	clipboard history: pick an old Ctrl+C and paste it with Ctrl+V
 Super+E	file manager
 Super+' / Super+`	scratchpad: floating terminal that shows/hides (key left of 1)
 Super+F1	this cheat sheet (all programs)

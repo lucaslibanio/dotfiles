@@ -30,6 +30,9 @@ GTK_THEME=Adwaita:dark nm-applet &
 GTK_THEME=Adwaita:dark cbatticon -i symbolic &
 xcompmgr &                                   # compositor: transparência do st
 dwmblocks &
+# histórico da área de transferência (Super+V). Só o Ctrl+C (não a seleção do
+# mouse), até 200 itens, guardados na RAM ($XDG_RUNTIME_DIR): somem ao desligar
+CM_SELECTIONS=clipboard CM_MAX_CLIPS=200 clipmenud &
 # volume: quando o áudio estiver pronto, limita a 100% e atualiza a barra (roda uma vez e sai)
 (until pactl info >/dev/null 2>&1; do sleep 1; done; controle.sh vol_limit; pkill -RTMIN+1 dwmblocks) &
 xss-lock --transfer-sleep-lock -- slock &    # bloqueia ao suspender ou fechar a tampa

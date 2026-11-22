@@ -18,7 +18,7 @@ libpulse pavucontrol brightnessctl playerctl
 dunst libnotify
 
 # utilitários dos scripts
-xclip maim satty udisks2 cryptsetup
+xclip maim satty udisks2 cryptsetup clipmenu
 
 # terminal
 tmux

@@ -5,6 +5,12 @@ tema on	pywal colors + last pywal wallpaper
 tema off	default colors + plain dark wallpaper
 tema status	which theme is active
 
+# Clipboard history (clipmenu)
+clipmenu	history in dmenu (or Super+V)
+clipctl disable / clipctl enable	pause / resume recording (before copying something private)
+clipctl status	is it recording?
+clipdel -d .	clear the whole history
+
 # tmux
 tmux-sessionizer	pick a project folder, open/attach its tmux session (Super+O)
 

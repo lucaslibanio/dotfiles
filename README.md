@@ -53,6 +53,7 @@ Nenhum arquivo é apagado: o que já existir no lugar de um link vira `<nome>.ba
 | `dmenu_display` | `Super+Shift+D` | estendido, espelhado, só notebook, só externo |
 | `dmenu_mount` | `Super+Shift+M` | monta/desmonta pendrives sem sudo |
 | `layout_change.sh` | | alterna teclado ABNT2 ↔ US internacional |
+| `clipmenu` (pacote) | `Super+V` | histórico do Ctrl+C (200 itens, na RAM); `clipctl disable` pausa |
 | `cheats` | `Super+F1` | colas de atalhos: `cheats st` no terminal, `--menu` no dmenu, `--check` confere com os config.h |
 | `tema` | `Super+Shift+T` | liga/desliga as cores do pywal; `tema imagem.jpg` gera cores novas |
 | `cripto_pendrive.sh` | | abre/fecha pendrive LUKS (`open /dev/sdb1`) |
