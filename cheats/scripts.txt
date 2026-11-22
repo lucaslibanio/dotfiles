@@ -6,7 +6,7 @@ tema off	default colors + plain dark wallpaper
 tema status	which theme is active
 
 # Clipboard history (clipmenu)
-clipmenu	history in dmenu (or Super+V; items cut to 40 chars by clipmenu-launcher)
+clipmenu	history in dmenu (or Super+V; items cut to 60 chars by clipmenu-launcher)
 clipctl disable / clipctl enable	pause / resume recording (before copying something private)
 clipctl status	is it recording?
 clipdel -d .	clear the whole history
