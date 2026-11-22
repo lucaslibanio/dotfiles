@@ -1,0 +1,20 @@
+#!/bin/bash
+# "Launcher" do clipmenu (CM_LAUNCHER): mostra cada item cortado em MAX
+# caracteres e devolve ao clipmenu a linha original do item escolhido.
+# Os argumentos (-c -l 15 ...) vão direto para o dmenu.
+MAX=20
+
+mapfile -t linhas    # o clipmenu manda uma linha por item, do mais novo ao mais velho
+[ ${#linhas[@]} -gt 0 ] || exit 1
+
+escolha=$(
+    for i in "${!linhas[@]}"; do
+        l=${linhas[i]}
+        (( ${#l} > MAX )) && l="${l:0:MAX}…"
+        printf '%2d  %s\n' "$((i + 1))" "$l"
+    done | dmenu "$@"
+) || exit 1
+
+n=${escolha%%  *}; n=${n// /}
+[[ $n =~ ^[0-9]+$ ]] && (( n >= 1 && n <= ${#linhas[@]} )) || exit 1
+printf '%s\n' "${linhas[n - 1]}"
