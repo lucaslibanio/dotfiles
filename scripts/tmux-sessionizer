@@ -1,0 +1,36 @@
+#!/bin/bash
+# Escolhe uma pasta de projeto no dmenu e abre uma sessão do tmux nela.
+# Se a sessão já existir, só volta para ela (com tudo como você deixou).
+#
+#   Super+O (dwm)      abre num terminal novo
+#   prefixo f (tmux)   troca de sessão dentro do tmux
+#   tmux-sessionizer   no terminal
+#
+# Pastas listadas: as subpastas de cada item de BASES (edite à vontade).
+BASES=("$HOME/Documents" "$HOME/Dropbox" "$HOME/.source" "$HOME")
+
+lista() {
+    for b in "${BASES[@]}"; do
+        [ -d "$b" ] || continue
+        echo "$b"
+        find "$b" -mindepth 1 -maxdepth 1 -type d -not -name '.*' 2>/dev/null
+    done | awk '!vistos[$0]++' | sed "s|^$HOME|~|"
+}
+
+escolha=$(lista | dmenu -c -i -l 15 -bw 2 -p "Projeto:") || exit 0
+dir="${escolha/#\~/$HOME}"
+[ -d "$dir" ] || { notify-send "tmux" "Pasta não encontrada: $escolha" 2>/dev/null; exit 1; }
+
+# nome da sessão: nome da pasta, sem pontos (o tmux não aceita) nem espaços
+nome=$(basename "$dir" | tr '. :' '___')
+[ "$dir" = "$HOME" ] && nome=home
+
+tmux has-session -t "=$nome" 2>/dev/null || tmux new-session -d -s "$nome" -c "$dir"
+
+if [ -n "$TMUX" ]; then
+    tmux switch-client -t "=$nome"          # já dentro do tmux: troca de sessão
+elif [ -t 1 ]; then
+    exec tmux attach-session -t "=$nome"    # num terminal: entra na sessão
+else
+    exec st -e tmux attach-session -t "=$nome"   # pelo dwm: abre um terminal novo
+fi

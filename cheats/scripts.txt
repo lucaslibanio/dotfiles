@@ -5,6 +5,9 @@ tema on	pywal colors + last pywal wallpaper
 tema off	default colors + plain dark wallpaper
 tema status	which theme is active
 
+# tmux
+tmux-sessionizer	pick a project folder, open/attach its tmux session (Super+O)
+
 # Disks and displays
 dmenu_mount	mount / unmount USB drives (Super+Shift+M)
 dmenu_display	displays (Super+Shift+D)

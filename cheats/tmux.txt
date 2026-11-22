@@ -1,0 +1,50 @@
+# Prefix is Ctrl+a (written "prefix" below). Ctrl+a a sends a real Ctrl+a to the shell.
+# Status bar shows PREFIX while it is pressed. Reload after editing the config: prefix r
+
+# Sessions
+tmux / tmux new -s name	start tmux / a named session
+tmux ls / tmux attach -t name	list sessions / attach to one
+prefix d	detach (everything keeps running)
+prefix f / Super+O	pick a project folder in dmenu (new or existing session)
+prefix s	session and window tree (pick with Enter)
+prefix BSpace	back to the previous session
+prefix $	rename session
+
+# Windows (tabs in the status bar)
+prefix c	new window in the current folder
+prefix 1-9	go to window
+prefix n / prefix p	next / previous window
+prefix C-a	toggle with the last window
+prefix ,	rename window
+prefix &	close window (asks y/n)
+
+# Panes (splits)
+prefix |	split side by side (current folder)
+prefix -	split top and bottom (current folder)
+prefix h / j / k / l	move to the pane left / down / up / right
+prefix H / J / K / L	resize (repeat the letter without the prefix)
+prefix z	zoom: pane fullscreen and back
+prefix x	close pane (asks y/n)
+prefix q	show pane numbers (type one to jump)
+prefix space	cycle pane layouts
+prefix !	move pane to its own window
+
+# Copy (vim style)
+prefix [	copy mode (scroll with the mouse wheel too)
+v / C-v	start selection / rectangle selection
+y	copy to the clipboard (Ctrl+V anywhere)
+/ / ?	search down / up (n / N for next / previous)
+q	leave copy mode (Esc only clears the selection)
+mouse drag or double click	select and copy right away
+prefix ]	paste the last tmux copy
+
+# Mouse
+click a pane	focus it
+drag a pane border	resize
+mouse wheel	scroll the history
+right click	pane menu (split, zoom, kill...)
+
+# Other
+prefix r	reload ~/.config/tmux/tmux.conf
+prefix ?	list every key binding
+prefix :	tmux command prompt

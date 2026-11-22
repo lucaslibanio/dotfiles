@@ -20,6 +20,9 @@ dunst libnotify
 # utilitários dos scripts
 xclip maim satty udisks2 cryptsetup
 
+# terminal
+tmux
+
 # PDF
 zathura zathura-pdf-mupdf
 
