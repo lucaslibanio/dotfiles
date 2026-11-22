@@ -59,7 +59,9 @@ instalar_pacman() {
         fi
     done
     (( ${#faltando[@]} )) && aviso "Não estão nos repositórios (pulados): ${faltando[*]}"
-    (( ${#ok[@]} )) && sudo pacman -S --needed --noconfirm "${ok[@]}"
+    # --assume-installed dmenu: o clipmenu depende do pacote dmenu, mas o dmenu
+    # daqui (com patches, em /usr/local) já cumpre esse papel
+    (( ${#ok[@]} )) && sudo pacman -S --needed --noconfirm --assume-installed dmenu "${ok[@]}"
     return 0
 }
 
